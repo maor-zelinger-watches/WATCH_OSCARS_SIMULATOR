@@ -8,9 +8,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Watch Oscars Simulator</title>
+    <title>GPHG Simulator — Build Your Watch Empire</title>
     <meta name="description"
-        content="Can you build an independent watch brand and win the Oscar of Watches? A retro 8-bit decision simulator.">
+        content="Can you build an independent watch brand and win the Grand Prix d'Horlogerie de Genève? A retro 8-bit decision simulator.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -579,6 +579,43 @@ em {
     color: var(--gold);
 }
 
+.ending-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.ending-buttons .btn {
+    flex: 1;
+    margin-top: 0;
+}
+
+.btn-share {
+    background: var(--navy-light);
+    color: var(--gold);
+    border: 3px solid var(--gold-dark);
+    box-shadow: 0 4px 0 var(--navy-dark);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.72rem;
+    padding: 12px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    line-height: 1.8;
+    transition: all 0.1s;
+}
+
+.btn-share:hover {
+    background: var(--gold-dark);
+    color: var(--cream);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--navy-dark);
+}
+
+.btn-share:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--navy-dark);
+}
+
 .about-text {
     font-size: 0.68rem;
     margin-bottom: 12px;
@@ -884,7 +921,10 @@ em {
                 <p id="ending-text"></p>
                 <p id="ending-reason" class="ending-reason"></p>
                 <div id="final-stats"></div>
-                <button class="btn btn-primary" onclick="game.restart()"> PLAY AGAIN</button>
+                <div class="ending-buttons">
+                    <button class="btn btn-primary" onclick="game.restart()"> PLAY AGAIN</button>
+                    <button class="btn btn-secondary share-btn" onclick="shareResult()">📤 SHARE</button>
+                </div>
             </div>
         </div>
 
@@ -898,9 +938,10 @@ em {
                     Watches."</p>
                 <p class="about-text">Balance your cash reserves against the Founder's happiness. Push too hard
                     for money and he quits. Spend too freely and you go bankrupt.</p>
-                    <p class="about-text">Made for the watch industry by <strong>Maor Zelinger Marketing Agency</strong></p>
-                    <p>Contact me at admin@maorzelinger.com</p>
-                <button class="btn btn-secondary" onclick="game.showStart()">< BACK</button>
+                <p class="about-text">Made for the watch industry by <strong>Maor Zelinger Marketing Agency</strong></p>
+                <p>Contact me at admin@maorzelinger.com</p>
+                <button class="btn btn-secondary" onclick="game.showStart()">
+                    < BACK</button>
             </div>
         </div>
 
@@ -912,7 +953,10 @@ em {
                 <p>The accounts are empty. The CNC machines are seized. The Founder locks the atelier one final time.
                 </p>
                 <p class="sub-text" id="bankrupt-info"></p>
-                <button class="btn btn-primary" onclick="game.restart()"> TRY AGAIN</button>
+                <div class="ending-buttons">
+                    <button class="btn btn-primary" onclick="game.restart()"> TRY AGAIN</button>
+                    <button class="btn btn-secondary share-btn" onclick="shareResult()">📤 SHARE</button>
+                </div>
             </div>
         </div>
 
@@ -924,7 +968,10 @@ em {
                 <p>The Founder throws his tools on the bench and walks out. "I refuse to compromise any further."
                     Without him, there is no brand.</p>
                 <p class="sub-text" id="quit-info"></p>
-                <button class="btn btn-primary" onclick="game.restart()"> TRY AGAIN</button>
+                <div class="ending-buttons">
+                    <button class="btn btn-primary" onclick="game.restart()"> TRY AGAIN</button>
+                    <button class="btn btn-secondary share-btn" onclick="shareResult()">📤 SHARE</button>
+                </div>
             </div>
         </div>
 
@@ -1237,6 +1284,57 @@ const ALL_SCENARIOS = [
 /* ================================================
    WATCH OSCARS SIMULATOR — Game Engine
    ================================================ */
+
+// === DEV MODE — type IDDQD to toggle ===
+window.DEV_MODE = false;
+window.DEV_LOG = [];
+function devLog(event, data) {
+  if (!window.DEV_MODE) return;
+  const entry = { event, timestamp: Date.now(), ...data };
+  window.DEV_LOG.push(entry);
+  console.log('%c[DEV]', 'color: #d4a843; font-weight: bold', JSON.stringify(entry, null, 2));
+}
+function toggleDevMode() {
+  window.DEV_MODE = !window.DEV_MODE;
+  const sky = document.querySelector('.bg-sky');
+  if (sky) sky.style.background = window.DEV_MODE ? '#4a0000' : '';
+  let panel = document.getElementById('dev-panel');
+  if (window.DEV_MODE) {
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'dev-panel';
+      panel.style.cssText = 'position:fixed;top:8px;right:8px;z-index:9999;background:#300;border:2px solid #f44;padding:8px;display:flex;flex-direction:column;gap:4px;font-family:monospace;font-size:11px;border-radius:4px;';
+      const endings = ['win', 'nominated', 'respected', 'soldout', 'bankrupt', 'quit'];
+      endings.forEach(type => {
+        const btn = document.createElement('button');
+        btn.textContent = '→ ' + type.toUpperCase();
+        btn.style.cssText = 'background:#600;color:#faa;border:1px solid #f44;padding:4px 8px;cursor:pointer;font-family:monospace;font-size:10px;';
+        btn.onclick = () => game.testEnding(type);
+        panel.appendChild(btn);
+      });
+      const off = document.createElement('button');
+      off.textContent = '✕ DEV OFF';
+      off.style.cssText = 'background:#333;color:#aaa;border:1px solid #666;padding:4px 8px;cursor:pointer;font-family:monospace;font-size:10px;margin-top:4px;';
+      off.onclick = toggleDevMode;
+      panel.appendChild(off);
+      document.body.appendChild(panel);
+    }
+    panel.style.display = 'flex';
+    console.log('%c🔓 DEV MODE ON — IDDQD to toggle off', 'color: #f44; font-size: 16px; font-weight: bold');
+  } else {
+    if (panel) panel.style.display = 'none';
+    console.log('%c🔒 DEV MODE OFF', 'color: #888; font-size: 14px');
+  }
+}
+// Cheat code listener: type IDDQD
+(function () {
+  let buf = '';
+  document.addEventListener('keydown', e => {
+    buf += e.key.toUpperCase();
+    if (buf.length > 10) buf = buf.slice(-10);
+    if (buf.includes('IDDQD')) { buf = ''; toggleDevMode(); }
+  });
+})();
 
 // === 16×16 PIXEL ART PORTRAITS ===
 const SPRITES = {
@@ -1697,7 +1795,7 @@ class Game {
   startGame() { this.showScreen('tutorial'); }
 
   startScenarios() {
-    this.cash = 60000; this.sanity = 70; this.idx = 0;
+    this.cash = 65000; this.sanity = 82; this.idx = 0;
     const shuffled = [...ALL_SCENARIOS];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1705,6 +1803,11 @@ class Game {
     }
     this.scenarios = shuffled.slice(0, 16);
     this.scenarios.push({ title: "The Award Ceremony", character: "The Award Ceremony", sprite: "trophy", text: "The lights dim in the grand ceremony hall. The host approaches the podium with a golden envelope...", isFinal: true });
+    window.DEV_LOG = [];
+    devLog('GAME_START', {
+      cash: this.cash, happiness: this.sanity,
+      scenarioOrder: this.scenarios.map((s, i) => ({ index: i, title: s.title }))
+    });
     this.updateUI(false);
     this.showScreen('game');
     setTimeout(() => this.render(), 300);
@@ -1730,7 +1833,16 @@ class Game {
   makeChoice(c) {
     const s = this.scenarios[this.idx];
     const chosen = c === 'a' ? s.choiceA : s.choiceB;
+    const prevCash = this.cash, prevHappiness = this.sanity;
     this.applyEffects(chosen.effects);
+    devLog('CHOICE', {
+      scenario: this.idx + 1, title: s.title, choice: c.toUpperCase(),
+      choiceText: chosen.text,
+      effects: chosen.effects,
+      before: { cash: prevCash, happiness: prevHappiness },
+      after: { cash: this.cash, happiness: this.sanity },
+      month: this.getMonth()
+    });
     this.showOutcome(chosen);
   }
 
@@ -1797,11 +1909,17 @@ class Game {
   }
 
   showBankrupt() {
+    devLog('GAME_OVER', { result: 'BANKRUPT', scenario: this.idx + 1, month: this.getMonth(), cash: this.cash, happiness: this.sanity });
+    if (window.DEV_MODE) console.log('%c[DEV] Full game log:', 'color: #d4a843; font-weight: bold', JSON.stringify(window.DEV_LOG, null, 2));
+    this.lastShareData = { icon: '💀', title: 'BANKRUPT', cash: formatCash(this.cash), happiness: this.sanity, isWin: false, summary: 'Went bankrupt in ' + this.getMonth() + '!' };
     document.getElementById('bankrupt-info').textContent = 'Went bankrupt in ' + this.getMonth() + ', scenario ' + (this.idx + 1) + ' of 16.';
     this.showScreen('bankrupt');
   }
 
   showQuit() {
+    devLog('GAME_OVER', { result: 'FOUNDER_QUIT', scenario: this.idx + 1, month: this.getMonth(), cash: this.cash, happiness: this.sanity });
+    if (window.DEV_MODE) console.log('%c[DEV] Full game log:', 'color: #d4a843; font-weight: bold', JSON.stringify(window.DEV_LOG, null, 2));
+    this.lastShareData = { icon: '🚪', title: 'FOUNDER QUIT', cash: formatCash(this.cash), happiness: this.sanity, isWin: false, summary: 'The Founder quit in ' + this.getMonth() + '!' };
     document.getElementById('quit-info').textContent = 'The Founder quit in ' + this.getMonth() + ', scenario ' + (this.idx + 1) + ' of 16.';
     this.showScreen('quit');
   }
@@ -1837,12 +1955,72 @@ class Game {
     document.getElementById('final-stats').innerHTML =
       '<div class="final-stat"><span class="stat-icon">💰</span><span class="stat-final-value">' + formatCash(this.cash) + '</span><span class="stat-label">CASH</span></div>' +
       '<div class="final-stat"><span class="stat-icon">😊</span><span class="stat-final-value">' + this.sanity + '</span><span class="stat-label">HAPPINESS</span></div>';
+    devLog('GAME_OVER', { result: title, cash: this.cash, happiness: this.sanity, reason });
+    if (window.DEV_MODE) console.log('%c[DEV] Full game log:', 'color: #d4a843; font-weight: bold', JSON.stringify(window.DEV_LOG, null, 2));
+    this.lastShareData = { icon, title, cash: formatCash(this.cash), happiness: this.sanity, isWin: this.sanity >= 75, summary: text };
     this.showScreen('ending');
   }
 
   restart() {
     document.querySelector('.ending-card')?.classList.remove('victory-glow');
     this.showScreen('start');
+  }
+
+  testEnding(type) {
+    const presets = {
+      win: { cash: 85000, sanity: 82 },
+      nominated: { cash: 40000, sanity: 60 },
+      respected: { cash: 30000, sanity: 45 },
+      soldout: { cash: 50000, sanity: 20 },
+      bankrupt: { cash: -5000, sanity: 55 },
+      quit: { cash: 70000, sanity: 0 },
+    };
+    const p = presets[type] || presets.win;
+    this.cash = p.cash; this.sanity = p.sanity; this.idx = 16;
+    this.scenarios = [{ title: 'Test', isFinal: true }];
+    if (type === 'bankrupt') { this.showBankrupt(); return; }
+    if (type === 'quit') { this.showQuit(); return; }
+    this.showEnding();
+  }
+}
+
+// === SHARE ===
+function getShareText(data) {
+  return `${data.icon} ${data.title}\n💰 ${data.cash} | 😊 ${data.happiness}/100\n${data.summary}\nhttps://maor-zelinger-watches.github.io/WATCH_OSCARS_SIMULATOR/`;
+}
+
+async function shareResult() {
+  const data = game.lastShareData;
+  if (!data) return;
+
+  const activeScreen = document.querySelector('.screen.active');
+  const card = activeScreen?.querySelector('.game-card');
+  if (!card) return;
+
+  const btn = activeScreen.querySelector('.share-btn');
+  const origText = btn?.textContent;
+  if (btn) btn.textContent = '⏳ SHARING...';
+
+  try {
+    const canvas = await html2canvas(card, { backgroundColor: '#1a1a3e', scale: 2 });
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const file = new File([blob], 'watch-oscars-result.png', { type: 'image/png' });
+    const text = getShareText(data);
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title: 'Watch Oscars Simulator', text, files: [file] });
+      if (btn) { btn.textContent = '✅ SHARED!'; setTimeout(() => btn.textContent = origText, 2000); }
+    } else {
+      await navigator.clipboard.writeText(text);
+      if (btn) { btn.textContent = '✅ COPIED!'; setTimeout(() => btn.textContent = origText, 2000); }
+    }
+  } catch (e) {
+    try {
+      await navigator.clipboard.writeText(getShareText(data));
+      if (btn) { btn.textContent = '✅ COPIED!'; setTimeout(() => btn.textContent = origText, 2000); }
+    } catch (_) {
+      if (btn) { btn.textContent = origText; }
+    }
   }
 }
 
