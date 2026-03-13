@@ -1697,7 +1697,7 @@ class Game {
   startGame() { this.showScreen('tutorial'); }
 
   startScenarios() {
-    this.cash = 65000; this.sanity = 80; this.idx = 0;
+    this.cash = 60000; this.sanity = 70; this.idx = 0;
     const shuffled = [...ALL_SCENARIOS];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
