@@ -922,11 +922,11 @@ em {
                 <p id="ending-text"></p>
                 <p id="ending-reason" class="ending-reason"></p>
                 <div id="final-stats"></div>
+                <p class="sub-text">Contact me at admin@maorzelinger.com</p>
                 <div class="ending-buttons">
                     <button class="btn btn-primary" onclick="game.restart()"> PLAY AGAIN</button>
                     <button class="btn btn-secondary share-btn" onclick="shareResult()">📤 SHARE</button>
                 </div>
-                <p>Contact me at admin@maorzelinger.com</p>
             </div>
         </div>
 
@@ -955,11 +955,11 @@ em {
                 <p>The accounts are empty. The CNC machines are seized. The Founder locks the atelier one final time.
                 </p>
                 <p class="sub-text" id="bankrupt-info"></p>
+                <p class="sub-text">Contact me at admin@maorzelinger.com</p>
                 <div class="ending-buttons">
                     <button class="btn btn-primary" onclick="game.restart()"> TRY AGAIN</button>
                     <button class="btn btn-secondary share-btn" onclick="shareResult()">📤 SHARE</button>
                 </div>
-                <p>Contact me at admin@maorzelinger.com</p>
             </div>
         </div>
 
@@ -971,11 +971,11 @@ em {
                 <p>The Founder throws his tools on the bench and walks out. "I refuse to compromise any further."
                     Without him, there is no brand.</p>
                 <p class="sub-text" id="quit-info"></p>
+                <p class="sub-text">Contact me at admin@maorzelinger.com</p>
                 <div class="ending-buttons">
                     <button class="btn btn-primary" onclick="game.restart()"> TRY AGAIN</button>
                     <button class="btn btn-secondary share-btn" onclick="shareResult()">📤 SHARE</button>
                 </div>
-                <p>Contact me at admin@maorzelinger.com</p>
             </div>
         </div>
 
@@ -1799,7 +1799,7 @@ class Game {
   startGame() { this.showScreen('tutorial'); }
 
   startScenarios() {
-    this.cash = 60000; this.sanity = 75; this.idx = 0;
+    this.cash = 65000; this.sanity = 82; this.idx = 0;
     const shuffled = [...ALL_SCENARIOS];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
