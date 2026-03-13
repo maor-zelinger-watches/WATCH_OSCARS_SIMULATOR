@@ -617,6 +617,83 @@ em {
     box-shadow: 0 1px 0 var(--navy-dark);
 }
 
+/* === CHANCE CARD (Fate Card) === */
+.chance-header {
+    font-size: 0.65rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.chance-icon-spin {
+    font-size: 4rem;
+    margin: 16px 0;
+    animation: slotSpin 0.15s linear infinite;
+}
+
+.chance-icon-spin.revealed {
+    animation: none;
+}
+
+@keyframes slotSpin {
+    0% {
+        content: '🎰';
+        transform: translateY(-4px);
+    }
+
+    25% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(4px);
+    }
+
+    75% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-4px);
+    }
+}
+
+.chance-title {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.chance-title.visible {
+    opacity: 1;
+}
+
+.chance-text {
+    font-size: 0.7rem;
+    line-height: 2;
+    color: var(--cream-dark);
+    margin-bottom: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.chance-text.visible {
+    opacity: 1;
+}
+
+.chance-positive .chance-title {
+    color: var(--green);
+    text-shadow: 1px 1px 0 #2a5a2a;
+}
+
+.chance-negative .chance-title {
+    color: var(--red);
+    text-shadow: 1px 1px 0 #5a2a2a;
+}
+
+/* === ABOUT === */
 .about-text {
     font-size: 0.68rem;
     margin-bottom: 12px;
@@ -1285,6 +1362,32 @@ const ALL_SCENARIOS = [
     }
 ];
 
+/* === CHANCE EVENTS (Fate Cards) === */
+const CHANCE_EVENTS = [
+    // Positive
+    { icon: '📉', title: 'SWISS FRANC DROPS', text: 'The Swiss Franc weakens against the Dollar and Euro. Your export revenue surges overnight!', effects: { cash: 20000, sanity: 0 }, positive: true },
+    { icon: '📸', title: 'CELEBRITY SPOTTED!', text: 'An A-list actor is photographed wearing your watch at Cannes. Orders flood in from new markets.', effects: { cash: 15000, sanity: 5 }, positive: true },
+    { icon: '🔨', title: 'AUCTION RECORD', text: 'One of your early pieces just sold at auction for 4x retail. The secondary market is on fire!', effects: { cash: 10000, sanity: 10 }, positive: true },
+    { icon: '🏅', title: 'GUILD AWARD', text: 'The local watchmaking guild recognizes your atelier for outstanding craftsmanship. The Founder is beaming.', effects: { cash: 0, sanity: 10 }, positive: true },
+    { icon: '🇯🇵', title: 'SURPRISE ORDER', text: 'A prestigious Japanese collector group places an unexpected bulk order for 3 timepieces.', effects: { cash: 25000, sanity: 0 }, positive: true },
+    { icon: '📰', title: 'PRESS FEATURE', text: 'A major watchmaking magazine runs a glowing 4-page feature on your manufacture. The phone is ringing non-stop.', effects: { cash: 10000, sanity: 5 }, positive: true },
+    { icon: '🏦', title: 'TAX REBATE', text: 'The Canton grants an unexpected tax rebate for artisan manufacturers. A nice chunk of CHF lands in your account.', effects: { cash: 15000, sanity: 0 }, positive: true },
+    { icon: '📦', title: 'MATERIAL WINDFALL', text: 'Your titanium supplier accidentally shipped double your order and tells you to keep it. Free material!', effects: { cash: 10000, sanity: 0 }, positive: true },
+    { icon: '👨‍🎓', title: 'APPRENTICE BREAKTHROUGH', text: 'Your apprentice finally masters the art of black-polishing. The Founder is genuinely proud of his student.', effects: { cash: 0, sanity: 10 }, positive: true },
+    { icon: '📱', title: 'INSTAGRAM VIRAL', text: 'A reel of the Founder hand-finishing a movement goes viral with 2M views. The waitlist doubles.', effects: { cash: 20000, sanity: 0 }, positive: true },
+    // Negative
+    { icon: '📈', title: 'FRANC SURGES', text: 'The Swiss Franc rockets against major currencies. Your export margins are crushed overnight.', effects: { cash: -20000, sanity: 0 }, positive: false },
+    { icon: '🚢', title: 'SUPPLY CHAIN DELAY', text: 'German spring wire is stuck in customs for weeks. Production grinds to a halt while you wait.', effects: { cash: -15000, sanity: 0 }, positive: false },
+    { icon: '🌊', title: 'WORKSHOP FLOOD', text: 'A burst pipe floods the workshop overnight. Several precision instruments and raw materials are damaged.', effects: { cash: -25000, sanity: -5 }, positive: false },
+    { icon: '🥷', title: 'COPYCAT SCANDAL', text: 'A near-perfect clone of your flagship model appears on Amazon for $200. Collectors are confused and furious.', effects: { cash: -10000, sanity: -5 }, positive: false },
+    { icon: '🚪', title: 'KEY EMPLOYEE QUITS', text: 'Your senior polisher, who trained for 8 years, accepts an offer from a big Geneva maison. A devastating loss.', effects: { cash: -10000, sanity: -10 }, positive: false },
+    { icon: '⚡', title: 'ENERGY BILL SPIKE', text: 'Electricity costs double overnight due to new energy regulations. The monthly operating costs are staggering.', effects: { cash: -10000, sanity: 0 }, positive: false },
+    { icon: '📋', title: 'INSURANCE HIKE', text: 'After a spate of industry claims, your insurance premium increases sharply. Another drain on the bottom line.', effects: { cash: -8000, sanity: 0 }, positive: false },
+    { icon: '❌', title: 'COSC REJECTION', text: 'The COSC rejects an entire batch of movements for failing chronometry tests. Back to regulation.', effects: { cash: -15000, sanity: -5 }, positive: false },
+    { icon: '🏠', title: 'RENT INCREASE', text: 'Your landlord raises the atelier rent by 40%, citing "market conditions." Moving would cost even more.', effects: { cash: -12000, sanity: 0 }, positive: false },
+    { icon: '🚫', title: 'SHOW CANCELLED', text: 'The Geneva watch show is cancelled last-minute. All your prep costs — booth, travel, marketing — wasted.', effects: { cash: -5000, sanity: -5 }, positive: false },
+];
+
 /* ================================================
    WATCH OSCARS SIMULATOR — Game Engine
    ================================================ */
@@ -1787,11 +1890,27 @@ class Game {
   }
 
   showScreen(name) {
+    // Cancel any pending transition to prevent race conditions
+    if (this._screenTimer) { clearTimeout(this._screenTimer); this._screenTimer = null; }
     const cur = document.querySelector('.screen.active');
+    const target = this.screens[name];
+    if (!target) { console.warn('[SCREEN] Unknown screen:', name); return; }
+    console.log('[SCREEN]', cur?.id?.replace('-screen', '') || 'none', '→', name);
     if (cur) {
+      // If same screen, just swap content in place (no transition needed)
+      if (cur === target) {
+        console.log('[SCREEN] Same screen, skipping transition');
+        return;
+      }
       cur.classList.add('screen-exit');
-      setTimeout(() => { cur.classList.remove('active', 'screen-exit'); this.screens[name].classList.add('active'); }, 230);
-    } else this.screens[name].classList.add('active');
+      this._screenTimer = setTimeout(() => {
+        cur.classList.remove('active', 'screen-exit');
+        target.classList.add('active');
+        this._screenTimer = null;
+      }, 230);
+    } else {
+      target.classList.add('active');
+    }
   }
 
   showStart() { this.showScreen('start'); }
@@ -1905,9 +2024,76 @@ class Game {
   }
 
   nextScenario() {
+    console.log('[NEXT] idx:', this.idx, '→', this.idx + 1, '| cash:', this.cash, '| sanity:', this.sanity);
+    if (this.cash <= 0) { console.log('[NEXT] → BANKRUPT'); this.showBankrupt(); return; }
+    if (this.sanity <= 0) { console.log('[NEXT] → QUIT'); this.showQuit(); return; }
+    this.idx++;
+    // ~30% chance of a Fate Card event (not on the very first or last scenario)
+    if (this.idx > 1 && this.idx < 16 && Math.random() < 0.3) {
+      console.log('[FATE CARD] Triggering at idx', this.idx);
+      this.showChanceEvent();
+      return;
+    }
+    console.log('[NEXT] → scenario', this.idx);
+    this.showScreen('game');
+    setTimeout(() => this.render(), 300);
+  }
+
+  showChanceEvent() {
+    const event = CHANCE_EVENTS[Math.floor(Math.random() * CHANCE_EVENTS.length)];
+    console.log('[FATE CARD] Event:', event.title, '| positive:', event.positive, '| cash:', event.effects.cash, '| sanity:', event.effects.sanity);
+
+    // Apply effects immediately
+    this.applyEffects(event.effects);
+
+    // Force-close the current screen (we're on outcome)
+    if (this._screenTimer) { clearTimeout(this._screenTimer); this._screenTimer = null; }
+    const cur = document.querySelector('.screen.active');
+    if (cur) cur.classList.remove('active', 'screen-exit');
+
+    // Fill the outcome screen with fate card content
+    const container = document.getElementById('outcome-effects');
+    container.innerHTML = '';
+    if (event.effects.cash && event.effects.cash !== 0) {
+      const b = document.createElement('div');
+      b.className = 'effect-badge ' + (event.effects.cash > 0 ? 'positive' : 'negative');
+      b.textContent = '💰 ' + formatCashEffect(event.effects.cash);
+      container.appendChild(b);
+    }
+    if (event.effects.sanity && event.effects.sanity !== 0) {
+      const b = document.createElement('div');
+      b.className = 'effect-badge ' + (event.effects.sanity > 0 ? 'positive' : 'negative');
+      b.textContent = '😊 ' + (event.effects.sanity > 0 ? '+' : '') + event.effects.sanity;
+      container.appendChild(b);
+    }
+    document.getElementById('outcome-text').innerHTML =
+      '<div style="color:var(--gold);font-size:0.65rem;letter-spacing:2px;margin-bottom:8px">🎰 FATE CARD</div>' +
+      '<div style="font-size:1rem;margin-bottom:8px;color:' + (event.positive ? 'var(--green)' : 'var(--red)') + '">' + event.icon + ' ' + event.title + '</div>' +
+      '<div>' + event.text + '</div>';
+
+    // Swap the CONTINUE button to afterChance
+    const continueBtn = document.querySelector('#outcome-screen .btn-primary');
+    continueBtn.setAttribute('onclick', 'game.afterChance()');
+
+    // Show outcome fresh (no active screen → just fades in)
+    this.showScreen('outcome');
+
+    // Shake for negative events
+    if (!event.positive) {
+      setTimeout(() => {
+        const card = document.getElementById('outcome-card');
+        card.classList.add('shake');
+        setTimeout(() => card.classList.remove('shake'), 350);
+      }, 280);
+    }
+  }
+
+  afterChance() {
+    // Restore the CONTINUE button to normal behavior
+    const continueBtn = document.querySelector('#outcome-screen .btn-primary');
+    continueBtn.setAttribute('onclick', 'game.nextScenario()');
     if (this.cash <= 0) { this.showBankrupt(); return; }
     if (this.sanity <= 0) { this.showQuit(); return; }
-    this.idx++;
     this.showScreen('game');
     setTimeout(() => this.render(), 300);
   }
