@@ -1915,6 +1915,7 @@ class Game {
     this.lastShareData = { icon: '💀', title: 'BANKRUPT', cash: formatCash(this.cash), happiness: this.sanity, isWin: false, summary: 'Went bankrupt in ' + this.getMonth() + '!' };
     document.getElementById('bankrupt-info').textContent = 'Went bankrupt in ' + this.getMonth() + ', scenario ' + (this.idx + 1) + ' of 16.';
     this.showScreen('bankrupt');
+    prepareShareImage();
   }
 
   showQuit() {
@@ -1923,6 +1924,7 @@ class Game {
     this.lastShareData = { icon: '🚪', title: 'FOUNDER QUIT', cash: formatCash(this.cash), happiness: this.sanity, isWin: false, summary: 'The Founder quit in ' + this.getMonth() + '!' };
     document.getElementById('quit-info').textContent = 'The Founder quit in ' + this.getMonth() + ', scenario ' + (this.idx + 1) + ' of 16.';
     this.showScreen('quit');
+    prepareShareImage();
   }
 
   showEnding() {
@@ -1960,6 +1962,7 @@ class Game {
     if (window.DEV_MODE) console.log('%c[DEV] Full game log:', 'color: #d4a843; font-weight: bold', JSON.stringify(window.DEV_LOG, null, 2));
     this.lastShareData = { icon, title, cash: formatCash(this.cash), happiness: this.sanity, isWin: this.sanity >= 75, summary: text };
     this.showScreen('ending');
+    prepareShareImage();
   }
 
   restart() {
@@ -1986,8 +1989,25 @@ class Game {
 }
 
 // === SHARE ===
+let _cachedShareFile = null;
+
 function getShareText(data) {
   return `${data.icon} ${data.title}\n💰 ${data.cash} | 😊 ${data.happiness}/100\n${data.summary}\nhttps://maor-zelinger-watches.github.io/WATCH_OSCARS_SIMULATOR/`;
+}
+
+// Pre-render screenshot after ending screen is visible
+function prepareShareImage() {
+  _cachedShareFile = null;
+  setTimeout(async () => {
+    try {
+      const activeScreen = document.querySelector('.screen.active');
+      const card = activeScreen?.querySelector('.game-card');
+      if (!card) return;
+      const canvas = await html2canvas(card, { backgroundColor: '#1a1a3e', scale: 2 });
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+      _cachedShareFile = new File([blob], 'watch-oscars-result.png', { type: 'image/png' });
+    } catch (e) { /* silent — share will fall back to text */ }
+  }, 500);
 }
 
 async function shareResult() {
@@ -1995,31 +2015,30 @@ async function shareResult() {
   if (!data) return;
 
   const activeScreen = document.querySelector('.screen.active');
-  const card = activeScreen?.querySelector('.game-card');
-  if (!card) return;
-
-  const btn = activeScreen.querySelector('.share-btn');
+  const btn = activeScreen?.querySelector('.share-btn');
   const origText = btn?.textContent;
-  if (btn) btn.textContent = '⏳ SHARING...';
+  const text = getShareText(data);
 
   try {
-    const canvas = await html2canvas(card, { backgroundColor: '#1a1a3e', scale: 2 });
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-    const file = new File([blob], 'watch-oscars-result.png', { type: 'image/png' });
-    const text = getShareText(data);
-
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ title: 'Watch Oscars Simulator', text, files: [file] });
+    if (_cachedShareFile && navigator.share && navigator.canShare && navigator.canShare({ files: [_cachedShareFile] })) {
+      await navigator.share({ title: 'Watch Oscars Simulator', text, files: [_cachedShareFile] });
+      if (btn) { btn.textContent = '✅ SHARED!'; setTimeout(() => btn.textContent = origText, 2000); }
+    } else if (navigator.share) {
+      await navigator.share({ title: 'Watch Oscars Simulator', text });
       if (btn) { btn.textContent = '✅ SHARED!'; setTimeout(() => btn.textContent = origText, 2000); }
     } else {
       await navigator.clipboard.writeText(text);
       if (btn) { btn.textContent = '✅ COPIED!'; setTimeout(() => btn.textContent = origText, 2000); }
     }
   } catch (e) {
-    try {
-      await navigator.clipboard.writeText(getShareText(data));
-      if (btn) { btn.textContent = '✅ COPIED!'; setTimeout(() => btn.textContent = origText, 2000); }
-    } catch (_) {
+    if (e.name !== 'AbortError') {
+      try {
+        await navigator.clipboard.writeText(text);
+        if (btn) { btn.textContent = '✅ COPIED!'; setTimeout(() => btn.textContent = origText, 2000); }
+      } catch (_) {
+        if (btn) { btn.textContent = origText; }
+      }
+    } else {
       if (btn) { btn.textContent = origText; }
     }
   }
