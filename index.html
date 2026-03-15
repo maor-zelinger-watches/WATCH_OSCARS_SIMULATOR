@@ -2159,7 +2159,6 @@ function calcScore(cash, sanity) {
 // Plausibility validation
 function validateScore(score, cash, sanity) {
   if (cash <= 0 || sanity < 0 || sanity > 100) return false;
-  if (score > 200000) return false;
   const expected = calcScore(cash, sanity);
   return score === expected;
 }
