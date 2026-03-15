@@ -351,6 +351,7 @@ body {
 .btn-secondary:hover {
     background: #3d3d6e;
     transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--navy-dark);
 }
 
 .btn-secondary:active {
@@ -564,6 +565,7 @@ em {
     padding: 8px 14px;
     background: var(--navy-dark);
     border: 2px solid var(--gold-dark);
+    justify-content: center;
 }
 
 .final-stat .stat-icon {
@@ -580,10 +582,126 @@ em {
     color: var(--gold);
 }
 
+.final-stat-score {
+    flex: 1.5;
+    padding: 8px 14px;
+}
+
+.final-stat-score .score-value {
+    font-size: 1.4rem;
+    color: var(--gold-light);
+    text-shadow: 0 0 10px rgba(212, 168, 67, 0.4);
+}
+
+/* Score submit area */
+.score-submit {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 10px 0 8px;
+}
+
+.score-name-input {
+    flex: 1;
+    background: var(--navy-dark);
+    border: 2px solid var(--gold-dark);
+    color: var(--gold-light);
+    padding: 8px 10px;
+    font-family: 'Press Start 2P', monospace;
+    outline: none;
+}
+
+.score-name-input::placeholder {
+    color: var(--gold-dark);
+    opacity: 0.7;
+}
+
+.score-name-input:focus {
+    border-color: var(--gold);
+}
+
+.score-submit-btn {
+    width: 100%;
+    font-size: 0.65rem !important;
+    padding: 10px 12px !important;
+}
+
+.score-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.leaderboard-btn {
+    width: 100%;
+    margin-top: 0;
+}
+
+/* Leaderboard / Scoreboard */
+.scoreboard {
+    max-height: 360px;
+    overflow-y: auto;
+    margin: 8px 0;
+}
+
+.scoreboard table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.7rem;
+}
+
+.scoreboard th {
+    color: var(--gold);
+    text-align: left;
+    padding: 4px 6px;
+    border-bottom: 2px solid var(--gold-dark);
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+}
+
+.scoreboard td {
+    padding: 4px 6px;
+    border-bottom: 1px solid rgba(212, 168, 67, 0.15);
+    color: var(--gold-light);
+}
+
+.scoreboard tr.highlight {
+    background: rgba(212, 168, 67, 0.2);
+    border: 1px solid var(--gold);
+    animation: highlight-pulse 1.5s ease-in-out 3;
+}
+
+@keyframes highlight-pulse {
+
+    0%,
+    100% {
+        background: rgba(212, 168, 67, 0.2);
+    }
+
+    50% {
+        background: rgba(212, 168, 67, 0.35);
+    }
+}
+
+.scoreboard .rank-col {
+    width: 30px;
+    text-align: center;
+}
+
+.scoreboard .score-col {
+    text-align: right;
+}
+
+.scoreboard-empty {
+    text-align: center;
+    color: var(--gold-dark);
+    padding: 20px;
+    font-size: 0.7rem;
+}
+
 .ending-buttons {
     display: flex;
     gap: 8px;
-    margin-top: 4px;
+    margin-top: 26px;
 }
 
 .ending-buttons .btn {
@@ -905,6 +1023,8 @@ em {
                 <div class="pixel-divider"></div>
                 <button class="btn btn-primary" onclick="game.startGame()">> START GAME</button>
                 <button class="btn btn-secondary" onclick="game.showAbout()">? ABOUT</button>
+                <button class="btn btn-secondary leaderboard-btn" onclick="game.showLeaderboard()">🏅
+                    LEADERBOARD</button>
             </div>
         </div>
 
@@ -999,11 +1119,29 @@ em {
                 <p id="ending-text"></p>
                 <p id="ending-reason" class="ending-reason"></p>
                 <div id="final-stats"></div>
-                <p class="sub-text">Contact me at admin@maorzelinger.com</p>
+                <div id="score-submit" class="score-submit">
+                    <input type="text" id="score-name" class="score-name-input" placeholder="Your Name" maxlength="20"
+                        autocomplete="off" />
+                    <button class="btn btn-primary score-submit-btn" id="submit-score-btn"
+                        onclick="game.submitScore()">📤 SUBMIT SCORE</button>
+                </div>
+                <button class="btn btn-secondary leaderboard-btn" onclick="game.showLeaderboard()">🏅
+                    LEADERBOARD</button>
                 <div class="ending-buttons">
                     <button class="btn btn-primary" onclick="game.restart()"> PLAY AGAIN</button>
                     <button class="btn btn-secondary share-btn" onclick="shareResult()">📤 SHARE</button>
                 </div>
+
+            </div>
+        </div>
+
+        <!-- LEADERBOARD SCREEN -->
+        <div id="leaderboard-screen" class="screen">
+            <div class="game-card card-padded">
+                <h2>🏅 TOP 100 SCORES</h2>
+                <div id="scoreboard" class="scoreboard"></div>
+                <button class="btn btn-secondary" onclick="game.leaderboardBack()">
+                    < BACK</button>
             </div>
         </div>
 
@@ -1018,7 +1156,7 @@ em {
                 <p class="about-text">Balance your cash reserves against the Founder's happiness. Push too hard
                     for money and he quits. Spend too freely and you go bankrupt.</p>
                 <p class="about-text">Made for the watch industry by <strong>Maor Zelinger Marketing Agency</strong></p>
-                <p>Contact me at admin@maorzelinger.com</p>
+
                 <button class="btn btn-secondary" onclick="game.showStart()">
                     < BACK</button>
             </div>
@@ -1032,7 +1170,7 @@ em {
                 <p>The accounts are empty. The CNC machines are seized. The Founder locks the atelier one final time.
                 </p>
                 <p class="sub-text" id="bankrupt-info"></p>
-                <p class="sub-text">Contact me at admin@maorzelinger.com</p>
+
                 <div class="ending-buttons">
                     <button class="btn btn-primary" onclick="game.restart()"> TRY AGAIN</button>
                     <button class="btn btn-secondary share-btn" onclick="shareResult()">📤 SHARE</button>
@@ -1048,7 +1186,7 @@ em {
                 <p>The Founder throws his tools on the bench and walks out. "I refuse to compromise any further."
                     Without him, there is no brand.</p>
                 <p class="sub-text" id="quit-info"></p>
-                <p class="sub-text">Contact me at admin@maorzelinger.com</p>
+
                 <div class="ending-buttons">
                     <button class="btn btn-primary" onclick="game.restart()"> TRY AGAIN</button>
                     <button class="btn btn-secondary share-btn" onclick="shareResult()">📤 SHARE</button>
@@ -1063,242 +1201,242 @@ const ALL_SCENARIOS = [
     {
         title: "The Hidden Bridge", character: "The Founder", sprite: "founder", text: "The Founder wants to spend three extra weeks hand-beveling the underside of a bridge—a part the customer will never see.",
         choiceA: { text: "Let the Maestro work. Art takes time.", effects: { cash: -12000, sanity: 15 }, outcome: "The bridge is flawlessly finished. The Founder is ecstatic, but the 3-week delay cost you a fortune in lost production output." },
-        choiceB: { text: "No one will see it! Just assemble it.", effects: { cash: 5000, sanity: -20 }, outcome: "You push the watches out the door, securing quick cash. The Founder glares at the 'unfinished' movements with profound disgust." }
+        choiceB: { text: "No one will see it! Just assemble it.", effects: { cash: 5000, sanity: -17 }, outcome: "You push the watches out the door, securing quick cash. The Founder glares at the 'unfinished' movements with profound disgust." }
     },
     {
         title: "The Royal Request", character: "Billionaire Client", sprite: "billionaire", text: "A billionaire offers to buy 5 watches upfront, but only if you replace the guilloché dial with a neon-pink sapphire crystal bearing his initials.",
-        choiceA: { text: "We need the cash. Do it.", effects: { cash: 80000, sanity: -25 }, outcome: "The neon-pink dials are an absolute abomination, but the billionaire's massive wire transfer clears immediately. The Founder threatens to resign." },
+        choiceA: { text: "We need the cash. Do it.", effects: { cash: 80000, sanity: -21 }, outcome: "The neon-pink dials are an absolute abomination, but the billionaire's massive wire transfer clears immediately. The Founder threatens to resign." },
         choiceB: { text: "We are artisans, not customizers.", effects: { cash: -3000, sanity: 15 }, outcome: "You politely decline. The Founder praises your integrity, but the loss of the guaranteed sale stings." }
     },
     {
         title: "The Influencer", character: "Mega-Influencer", sprite: "influencer", text: "A mega-influencer with 5 million followers wants a free prototype. They don't know the difference between a tourbillon and a Casio.",
-        choiceA: { text: "Send them the watch.", effects: { cash: 15000, sanity: -15 }, outcome: "The influencer's post goes viral, driving a wave of new orders. But seeing the watch used as a prop horrifies the Founder." },
+        choiceA: { text: "Send them the watch.", effects: { cash: 15000, sanity: -13 }, outcome: "The influencer's post goes viral, driving a wave of new orders. But seeing the watch used as a prop horrifies the Founder." },
         choiceB: { text: "Our watches speak for themselves.", effects: { cash: -5000, sanity: 10 }, outcome: "You ignore the influencer's DMs. The Founder nods in approval; true horology doesn't need viral social media stunts." }
     },
     {
         title: "The Steel Trend", character: "The Founder", sprite: "founder", text: "The market is obsessed with 1970s-style steel sports watches. The Founder absolutely hates them and prefers classic dress watches.",
-        choiceA: { text: "Force him to design a steel sports watch.", effects: { cash: 35000, sanity: -30 }, outcome: "The steel watch is a massive commercial hit. However, the Founder feels he has sold his soul." },
+        choiceA: { text: "Force him to design a steel sports watch.", effects: { cash: 35000, sanity: -25 }, outcome: "The steel watch is a massive commercial hit. However, the Founder feels he has sold his soul." },
         choiceB: { text: "Stick to our classical roots.", effects: { cash: -5000, sanity: 20 }, outcome: "You release another classic dress watch. It sells slowly, but the Founder's artistic vision remains pure." }
     },
     {
         title: "The Macro-Lens Scandal", character: "Watch Blogger", sprite: "journalist", text: "A prominent blogger uses a 100x macro lens and finds a microscopic dust particle on a dial, posting it to 200k followers.",
         choiceA: { text: "Recall the batch for quality control.", effects: { cash: -25000, sanity: 15 }, outcome: "Recalling and cleaning the dials costs a fortune. But the Founder is proud you prioritized perfection." },
-        choiceB: { text: "Call it a 'unique artisanal birthmark'.", effects: { cash: 5000, sanity: -10 }, outcome: "You spin the dust as 'proof of hand-craftsmanship.' It actually sells well, but the Founder feels like a fraud." }
+        choiceB: { text: "Call it a 'unique artisanal birthmark'.", effects: { cash: 5000, sanity: -8 }, outcome: "You spin the dust as 'proof of hand-craftsmanship.' It actually sells well, but the Founder feels like a fraud." }
     },
     {
         title: "The Grey Market Flipper", character: "Grey Market Dealer", sprite: "collector", text: "You discover one of your 'VIP Collectors' is immediately flipping your watches on Chrono24 for three times retail.",
         choiceA: { text: "Publicly blacklist them!", effects: { cash: -15000, sanity: 10 }, outcome: "You ban the flipper. You lose a reliable buyer, hurting cash flow, but the Founder is glad watches go to real enthusiasts." },
-        choiceB: { text: "A sale is a sale. Look the other way.", effects: { cash: 25000, sanity: -5 }, outcome: "The flipper keeps buying, injecting steady cash. The Founder is annoyed his art is treated like a stock portfolio." }
+        choiceB: { text: "A sale is a sale. Look the other way.", effects: { cash: 25000, sanity: -4 }, outcome: "The flipper keeps buying, injecting steady cash. The Founder is annoyed his art is treated like a stock portfolio." }
     },
     {
         title: "The Tantalum Problem", character: "The Founder", sprite: "founder", text: "The Founder wants to machine the new cases out of Tantalum. Beautiful hue, but it completely destroys CNC machine tools.",
         choiceA: { text: "Order Tantalum and replacement tools.", effects: { cash: -35000, sanity: 15 }, outcome: "The Tantalum destroys three CNC milling heads, but the resulting cases are breathtaking. The Founder is elated." },
-        choiceB: { text: "Just use standard Titanium.", effects: { cash: 8000, sanity: -10 }, outcome: "Titanium machines easily, saving time and tool costs. The Founder is disappointed by the 'generic' material choice." }
+        choiceB: { text: "Just use standard Titanium.", effects: { cash: 8000, sanity: -8 }, outcome: "Titanium machines easily, saving time and tool costs. The Founder is disappointed by the 'generic' material choice." }
     },
     {
         title: "The Web3 Tech Bro", character: "Tech Bro", sprite: "tech", text: "A Silicon Valley billionaire wants to buy a watch, but only if you mint a 'Digital Twin NFT' for the Metaverse. He offers double retail.",
-        choiceA: { text: "Mint the NFT! The future is now.", effects: { cash: 60000, sanity: -35 }, outcome: "The 'Digital Twin' sells for double retail. The Founder is physically nauseated by the concept of digital horology." },
+        choiceA: { text: "Mint the NFT! The future is now.", effects: { cash: 60000, sanity: -30 }, outcome: "The 'Digital Twin' sells for double retail. The Founder is physically nauseated by the concept of digital horology." },
         choiceB: { text: "Mechanical art only. Dismiss him.", effects: { cash: 0, sanity: 20 }, outcome: "You show the tech bro the door. The Founder beams, knowing his art won't be reduced to pixels." }
     },
     {
-        title: "The Lume Spill", character: "Clumsy Apprentice", sprite: "apprentice", text: "A clumsy apprentice knocked over a vat of Grade A Super-LumiNova. The workshop now glows violently green in the dark.",
-        choiceA: { text: "Order a premium replacement vat.", effects: { cash: -18000, sanity: 10 }, outcome: "Replacing the expensive lume drains the accounts, but the dials glow perfectly. The Founder's standards are upheld." },
-        choiceB: { text: "Use cheaper, dimmer lume for this batch.", effects: { cash: 5000, sanity: -10 }, outcome: "You finish the batch with cheap C1 lume, saving money. The Founder is disappointed in the visual compromise." }
+        title: "The Lume Spill", character: "Clumsy Apprentice", sprite: "apprentice", text: "A clumsy apprentice knocked over a vat of Grade X1 Super-LumiNova. The workshop now glows violently green in the dark.",
+        choiceA: { text: "Order a premium replacement vat.", effects: { cash: -8000, sanity: 10 }, outcome: "Replacing the expensive lume drains the accounts, but the dials glow perfectly. The Founder's standards are upheld." },
+        choiceB: { text: "Use cheaper, dimmer lume for this batch.", effects: { cash: -1000, sanity: -8 }, outcome: "You finish the batch with cheap generic lume, saving money. The Founder is disappointed in the visual compromise." }
     },
     {
         title: "The Boutique Ultimatum", character: "Dubai Retailer", sprite: "executive", text: "A prestigious retailer in Dubai demands 20% of your total annual production, or they will drop your brand entirely.",
-        choiceA: { text: "Give them the allocation.", effects: { cash: 55000, sanity: -10 }, outcome: "The Dubai boutique wires a massive deposit. The Founder resents losing control over who wears his creations." },
+        choiceA: { text: "Give them the allocation.", effects: { cash: 55000, sanity: -8 }, outcome: "The Dubai boutique wires a massive deposit. The Founder resents losing control over who wears his creations." },
         choiceB: { text: "Tell them to take a hike. DTC only.", effects: { cash: -25000, sanity: 15 }, outcome: "You cut ties, losing guaranteed revenue. The Founder is thrilled to maintain absolute independence." }
     },
     {
         title: "The Counterfeit Scare", character: "Devastated Customer", sprite: "collector", text: "A customer sends a watch for servicing, and it's a high-quality 'super-clone'. They bought it grey-market and are devastated.",
         choiceA: { text: "Confiscate and destroy it per Swiss law.", effects: { cash: -5000, sanity: 5 }, outcome: "You smash the clone. Dealing with the angry customer costs time and legal fees, but the Founder feels justice was served." },
-        choiceB: { text: "Quietly return it. Not our problem.", effects: { cash: 0, sanity: -10 }, outcome: "You ship the fake back. The Founder is disgusted that a counterfeit bearing his name exists in the wild." }
+        choiceB: { text: "Quietly return it. Not our problem.", effects: { cash: 0, sanity: -8 }, outcome: "You ship the fake back. The Founder is disgusted that a counterfeit bearing his name exists in the wild." }
     },
     {
         title: "The Constant Force Dream", character: "The Founder", sprite: "founder", text: "The Founder bursts into your office demanding to scrap the current escapement and build a new constant-force mechanism from scratch.",
         choiceA: { text: "Support his genius. Delay the launch.", effects: { cash: -45000, sanity: 20 }, outcome: "R&D costs spiral and sales halt, but the Founder is in a state of absolute creative euphoria." },
-        choiceB: { text: "Absolutely not. Stick to the schedule.", effects: { cash: 15000, sanity: -30 }, outcome: "You force the standard escapement to meet deliveries. You make sales, but the Founder's resentment is palpable." }
+        choiceB: { text: "Absolutely not. Stick to the schedule.", effects: { cash: 15000, sanity: -25 }, outcome: "You force the standard escapement to meet deliveries. You make sales, but the Founder's resentment is palpable." }
     },
     {
         title: "The 5-Axis Crisis", character: "Workshop Manager", sprite: "engineer", text: "Your primary 5-axis CNC machine breaks down right before you need to mill mainplates for the new release.",
         choiceA: { text: "Fly in German engineers for emergency repair.", effects: { cash: -25000, sanity: 10 }, outcome: "The emergency repair bill is eye-watering, but the machine is perfectly calibrated. The Founder is relieved." },
-        choiceB: { text: "Have the local mechanic jerry-rig it.", effects: { cash: 3000, sanity: -15 }, outcome: "It runs cheaply, but tolerances are off. The Founder spends hours manually correcting flawed baseplates." }
+        choiceB: { text: "Have the local mechanic jerry-rig it.", effects: { cash: -3000, sanity: -13 }, outcome: "It runs cheaply, but tolerances are off. The Founder spends hours manually correcting flawed baseplates." }
     },
     {
         title: "The Hollywood Ambassador", character: "Celebrity Agent", sprite: "celebrity", text: "A massive Hollywood actor wants to be your Global Ambassador, but wants a 5% equity stake in the manufacture.",
-        choiceA: { text: "Give him the equity. The exposure is insane.", effects: { cash: 30000, sanity: -15 }, outcome: "The celebrity buzz drives massive sales. But the Founder hates giving away ownership to a celebrity." },
+        choiceA: { text: "Give him the equity. The exposure is insane.", effects: { cash: 30000, sanity: -13 }, outcome: "The celebrity buzz drives massive sales. But the Founder hates giving away ownership to a celebrity." },
         choiceB: { text: "We don't do paid ambassadors.", effects: { cash: -10000, sanity: 15 }, outcome: "You tell the agent no. You miss out on exposure, but the Founder deeply respects your dedication to craft." }
     },
     {
         title: "The Grand Feu Furnace", character: "The Founder", sprite: "founder", text: "The Founder is attempting Grand Feu enamel dials in-house. The rejection rate is 90% because they keep cracking in the kiln.",
         choiceA: { text: "Keep firing until they are perfect.", effects: { cash: -28000, sanity: 15 }, outcome: "Kiln after kiln of shattered enamel costs a fortune. But the Founder finally achieves perfection and is ecstatic." },
-        choiceB: { text: "Switch to a cheaper lacquer dial.", effects: { cash: 12000, sanity: -10 }, outcome: "Lacquer dials secure immediate sales. The Founder feels like a fraud for abandoning the traditional technique." }
+        choiceB: { text: "Switch to a cheaper lacquer dial.", effects: { cash: 12000, sanity: -8 }, outcome: "Lacquer dials secure immediate sales. The Founder feels like a fraud for abandoning the traditional technique." }
     },
     {
         title: "The Secret Buyback", character: "Auction House Rep", sprite: "auctioneer", text: "One of your early watches is up for auction and bidding is shockingly low. If it sells cheap, your secondary market value tanks.",
         choiceA: { text: "Bid on our own watch to pump the price.", effects: { cash: -35000, sanity: 10 }, outcome: "You pump the price, protecting the brand's market value. The Founder is relieved his work still commands respect." },
-        choiceB: { text: "Let the free market decide.", effects: { cash: 5000, sanity: -10 }, outcome: "The watch sells below retail. You save your reserves, but the Founder is gutted seeing his art undervalued." }
+        choiceB: { text: "Let the free market decide.", effects: { cash: 5000, sanity: -8 }, outcome: "The watch sells below retail. You save your reserves, but the Founder is gutted seeing his art undervalued." }
     },
     {
         title: "The Investor's Nephew", character: "Investor's Nephew", sprite: "investor", text: "Your silent partner's nephew strongly suggests adding a 'smart-module' to your straps to track steps and appeal to Gen-Z.",
-        choiceA: { text: "Try the smart strap to keep investors happy.", effects: { cash: 30000, sanity: -30 }, outcome: "The investor rewards you with a cash injection. The Founder literally throws the bluetooth module out the window." },
+        choiceA: { text: "Try the smart strap to keep investors happy.", effects: { cash: 30000, sanity: -25 }, outcome: "The investor rewards you with a cash injection. The Founder literally throws the bluetooth module out the window." },
         choiceB: { text: "Kick him out of the atelier.", effects: { cash: -18000, sanity: 20 }, outcome: "The investor pulls their funding. The Founder celebrates the nephew's departure with vintage wine." }
     },
     {
         title: "The Meteorite Shortage", character: "Material Supplier", sprite: "supplier", text: "The Namibian government banned export of Gibeon meteorite, and your supplier is completely out.",
         choiceA: { text: "Buy smuggled Gibeon on the black market.", effects: { cash: -45000, sanity: 10 }, outcome: "The black-market markup is astronomical, but the Gibeon meteorite dials are stunning. The Founder's vision is realized." },
-        choiceB: { text: "Pivot to a cheaper, less famous meteorite.", effects: { cash: 6000, sanity: -10 }, outcome: "You source the cheaper material easily, saving money. But the Founder is disappointed by the inferior grain pattern." }
+        choiceB: { text: "Pivot to a cheaper, less famous meteorite.", effects: { cash: 6000, sanity: -8 }, outcome: "You source the cheaper material easily, saving money. But the Founder is disappointed by the inferior grain pattern." }
     },
     {
         title: "The Patek Poach", character: "Lead Watchmaker", sprite: "watchmaker", text: "A major Geneva powerhouse just offered to double the salary of your lead watchmaker.",
         choiceA: { text: "Match their offer immediately.", effects: { cash: -25000, sanity: 10 }, outcome: "Matching the salary puts a huge dent in payroll, but the Founder is relieved to keep his right-hand man." },
-        choiceB: { text: "Let him go. Train a new apprentice.", effects: { cash: 8000, sanity: -20 }, outcome: "You save on payroll, but the Founder is crushed and works double shifts to cover lost production." }
+        choiceB: { text: "Let him go. Train a new apprentice.", effects: { cash: 8000, sanity: -17 }, outcome: "You save on payroll, but the Founder is crushed and works double shifts to cover lost production." }
     },
     {
         title: "The 'Homage' Brand", character: "IP Lawyer", sprite: "executive", text: "A Chinese factory released an exact 1:1 clone of your best-selling watch for $150. It's blowing up online.",
         choiceA: { text: "Hire expensive IP lawyers to sue.", effects: { cash: -15000, sanity: 10 }, outcome: "The lawyers are expensive, but the cease-and-desist succeeds. The Founder feels his intellectual property is protected." },
-        choiceB: { text: "Ignore them. Imitation is flattery.", effects: { cash: 5000, sanity: -10 }, outcome: "You save money, but the cheap clone floods the market, confusing new collectors. The Founder stews in frustration." }
+        choiceB: { text: "Ignore them. Imitation is flattery.", effects: { cash: -1000, sanity: -8 }, outcome: "You save money, but the cheap clone floods the market, confusing new collectors. The Founder stews in frustration." }
     },
     {
         title: "The Bespoke Strap", character: "Influential Collector", sprite: "collector", text: "An influential collector insists her strap be made from vegan pineapple leather instead of traditional alligator.",
-        choiceA: { text: "Make the pineapple strap for her endorsement.", effects: { cash: 6000, sanity: -20 }, outcome: "You fulfill the order. The Founder complains constantly about how the 'fake plastic' ruins his watch's aesthetic." },
+        choiceA: { text: "Make the pineapple strap for her endorsement.", effects: { cash: 6000, sanity: -17 }, outcome: "You fulfill the order. The Founder complains constantly about how the 'fake plastic' ruins his watch's aesthetic." },
         choiceB: { text: "Refuse. Alligator or nothing.", effects: { cash: -5000, sanity: 15 }, outcome: "She cancels her order. The Founder proudly strokes a piece of premium alligator leather." }
     },
     {
         title: "The Trade Show", character: "Trade Show Director", sprite: "executive", text: "A new, incredibly expensive trade show is launching in Geneva. A booth costs half your annual marketing budget.",
         choiceA: { text: "Buy the booth. We need press.", effects: { cash: -45000, sanity: 10 }, outcome: "The massive fee wipes out your marketing budget, but the press coverage is incredible. The Founder gains new admirers." },
-        choiceB: { text: "Host private viewings in a hotel suite.", effects: { cash: 3000, sanity: -5 }, outcome: "You save a fortune with intimate viewings. But missing the show leaves the brand feeling invisible to the wider industry." }
+        choiceB: { text: "Host private viewings in a hotel suite.", effects: { cash: 3000, sanity: -4 }, outcome: "You save a fortune with intimate viewings. But missing the show leaves the brand feeling invisible to the wider industry." }
     },
     {
         title: "The Sapphire Nightmare", character: "The Founder", sprite: "founder", text: "The Founder has shattered 14 solid sapphire cases trying to machine one perfectly. He hasn't slept in weeks.",
         choiceA: { text: "Order more sapphire blocks. He's close.", effects: { cash: -30000, sanity: 15 }, outcome: "More synthetic sapphire costs a fortune. But on the 15th attempt, he nails it — pure transparent perfection." },
-        choiceB: { text: "Pull the plug. Go back to precious metals.", effects: { cash: 12000, sanity: -10 }, outcome: "You pivot back to gold, shipping immediately for cash. But the Founder feels he abandoned his greatest challenge." }
+        choiceB: { text: "Pull the plug. Go back to precious metals.", effects: { cash: 12000, sanity: -8 }, outcome: "You pivot back to gold, shipping immediately for cash. But the Founder feels he abandoned his greatest challenge." }
     },
     {
         title: "The Unwanted Collab", character: "Streetwear Brand", sprite: "designer", text: "A hyped streetwear brand wants to put their cartoon mascot on your tourbillon dial and sell it via a 'hype drop'.",
-        choiceA: { text: "Do it. The hype will be unprecedented.", effects: { cash: 90000, sanity: -40 }, outcome: "The 'hype drop' sells out in seconds. The Founder is devastated to see a cartoon dog on his tourbillon." },
+        choiceA: { text: "Do it. The hype will be unprecedented.", effects: { cash: 120000, sanity: -34 }, outcome: "The 'hype drop' sells out in seconds. The Founder is devastated to see a cartoon dog on his tourbillon." },
         choiceB: { text: "Absolutely not. We are serious watchmakers.", effects: { cash: 0, sanity: 20 }, outcome: "You reject easy money. The Founder is deeply grateful you protected the manufacture's dignity." }
     },
     {
         title: "The Vintage Restoration", character: "Auction House", sprite: "auctioneer", text: "An auction house asks the Founder to restore an 18th-century Breguet pocket watch. It will halt modern production for months.",
         choiceA: { text: "Accept. It cements his legacy.", effects: { cash: -15000, sanity: 15 }, outcome: "Modern production halts, but the Founder is completely energized working on a true piece of history." },
-        choiceB: { text: "Decline. Focus on our own brand.", effects: { cash: 25000, sanity: -15 }, outcome: "You secure vital revenue. He is deeply resentful about missing the historic opportunity." }
+        choiceB: { text: "Decline. Focus on our own brand.", effects: { cash: 25000, sanity: -13 }, outcome: "You secure vital revenue. He is deeply resentful about missing the historic opportunity." }
     },
     {
         title: "The Titanium Crisis", character: "Material Supplier", sprite: "supplier", text: "Aerospace-grade titanium has skyrocketed 400%. You need it for your new sports watch line.",
         choiceA: { text: "Absorb the cost. Keep retail price the same.", effects: { cash: -35000, sanity: 0 }, outcome: "Eating the markup severely damages your treasury. The Founder is indifferent, as long as he has his metal." },
-        choiceB: { text: "Raise retail price by 30%.", effects: { cash: 15000, sanity: -10 }, outcome: "Margins hold, but angry emails pour in from waitlisted clients. The customer service nightmare stresses everyone." }
+        choiceB: { text: "Raise retail price by 30%.", effects: { cash: 15000, sanity: -8 }, outcome: "Margins hold, but angry emails pour in from waitlisted clients. The customer service nightmare stresses everyone." }
     },
     {
         title: "The 'In-House' Accusation", character: "The Founder", sprite: "founder", text: "An anonymous Instagram account claims your in-house caliber is just a heavily modified vintage Peseux 7001.",
         choiceA: { text: "Publish a technical manifesto defending it.", effects: { cash: -5000, sanity: 15 }, outcome: "Hiring a PR firm costs money, but the Founder feels vindicated seeing his modifications validated publicly." },
-        choiceB: { text: "Ignore the trolls. True collectors know.", effects: { cash: 0, sanity: -10 }, outcome: "You save money, but the Founder stews in anger, feeling his integrity has been unfairly attacked." }
+        choiceB: { text: "Ignore the trolls. True collectors know.", effects: { cash: 0, sanity: -8 }, outcome: "You save money, but the Founder stews in anger, feeling his integrity has been unfairly attacked." }
     },
     {
         title: "The Unexpected Endorsement", character: "PR Manager", sprite: "executive", text: "A highly polarizing political figure was photographed wearing your flagship chronograph during a major scandal.",
         choiceA: { text: "Release a statement distancing the brand.", effects: { cash: -15000, sanity: 10 }, outcome: "Distancing triggers mass cancellations from the politician's supporters. The Founder is relieved to stay out of the mud." },
-        choiceB: { text: "Stay silent and accept the influx of orders.", effects: { cash: 30000, sanity: -20 }, outcome: "Sales go through the roof from a strange new demographic. The Founder is deeply uncomfortable." }
+        choiceB: { text: "Stay silent and accept the influx of orders.", effects: { cash: 30000, sanity: -17 }, outcome: "Sales go through the roof from a strange new demographic. The Founder is deeply uncomfortable." }
     },
     {
         title: "The Guilloché Breakdown", character: "Workshop Manager", sprite: "engineer", text: "Your antique rose engine lathe from 1920 broke a vital, irreplaceable cam. It creates your signature dial pattern.",
         choiceA: { text: "Hire an engineer to fabricate a new cam.", effects: { cash: -20000, sanity: 15 }, outcome: "Fabricating a 1920s part is incredibly expensive. But when the machine fires up, the Founder sheds a tear of joy." },
-        choiceB: { text: "Switch to laser-engraved dials temporarily.", effects: { cash: 10000, sanity: -25 }, outcome: "Laser engraving is fast and cheap. The Founder considers it an absolute crime against humanity." }
+        choiceB: { text: "Switch to laser-engraved dials temporarily.", effects: { cash: 10000, sanity: -21 }, outcome: "Laser engraving is fast and cheap. The Founder considers it an absolute crime against humanity." }
     },
     {
         title: "The Geneva Seizure", character: "Customs Officer", sprite: "executive", text: "Swiss Customs seized a shipment of exotic ostrich leg straps because the CITES paperwork had a single typo.",
         choiceA: { text: "Hire a specialist customs lawyer.", effects: { cash: -12000, sanity: 5 }, outcome: "The lawyer secures release. Fee is hefty, but the Founder is glad his vision for the watch remains intact." },
-        choiceB: { text: "Abandon the shipment. Order calfskin.", effects: { cash: 5000, sanity: -15 }, outcome: "You pivot to cheaper calfskin, saving money. The Founder thinks the calfskin looks horribly cheap." }
+        choiceB: { text: "Abandon the shipment. Order calfskin.", effects: { cash: -2000, sanity: -13 }, outcome: "You pivot to cheaper calfskin, saving money. The Founder thinks the calfskin looks horribly cheap." }
     },
     {
         title: "The Petite Aiguille", character: "The Founder", sprite: "founder", text: "Your new watch is 8,500 CHF. Lowering it to 7,900 CHF lets you dominate the easier 'entry-level' award category.",
         choiceA: { text: "Lower the price. Secure a likely win.", effects: { cash: -20000, sanity: 15 }, outcome: "Slashing margins drains revenue, but the Founder is confident about dominating the category." },
-        choiceB: { text: "Keep the price. Compete with the big boys.", effects: { cash: 25000, sanity: -10 }, outcome: "Luxury margins secured, but the Founder is anxious about facing Patek and Lange." }
+        choiceB: { text: "Keep the price. Compete with the big boys.", effects: { cash: 25000, sanity: -8 }, outcome: "Luxury margins secured, but the Founder is anxious about facing Patek and Lange." }
     },
     {
         title: "The Enamel Crack", character: "The Founder", sprite: "founder", text: "The Founder spent six weeks painting a miniature enamel portrait. On the final firing, a hairline crack appears.",
         choiceA: { text: "Smash it and start over. Perfection only.", effects: { cash: -15000, sanity: 10 }, outcome: "Six weeks of labor lost — but the Founder respects that you share his uncompromising standard of perfection." },
-        choiceB: { text: "Fill the crack with gold, Kintsugi style.", effects: { cash: 15000, sanity: -10 }, outcome: "The 'Kintsugi' piece sells at a premium as unique art. The Founder still views it as a broken dial." }
+        choiceB: { text: "Fill the crack with gold, Kintsugi style.", effects: { cash: 15000, sanity: -8 }, outcome: "The 'Kintsugi' piece sells at a premium as unique art. The Founder still views it as a broken dial." }
     },
     {
         title: "The Silicon Debate", character: "Parts Supplier", sprite: "supplier", text: "A supplier offers anti-magnetic silicon escapements requiring no lubrication. The Founder thinks silicon has 'no soul'.",
-        choiceA: { text: "Force him to use silicon. Accuracy is king.", effects: { cash: 10000, sanity: -25 }, outcome: "Silicon parts are cheaper to assemble, boosting margins. The Founder despises inserting 'microchips' into his art." },
+        choiceA: { text: "Force him to use silicon. Accuracy is king.", effects: { cash: 10000, sanity: -21 }, outcome: "Silicon parts are cheaper to assemble, boosting margins. The Founder despises inserting 'microchips' into his art." },
         choiceB: { text: "Stick to traditional steel and ruby.", effects: { cash: -8000, sanity: 20 }, outcome: "Hand-adjusting traditional escapements costs more, but the Founder's traditionalist heart is full." }
     },
     {
         title: "The Sudden Inheritance", character: "The Founder", sprite: "founder", text: "The Founder discovers dusty NOS Valjoux 72 chronograph movements from the 1960s in the attic.",
         choiceA: { text: "Design a retro-chronograph around them!", effects: { cash: -25000, sanity: 20 }, outcome: "Designing around vintage movements costs massive R&D, but the Founder is having the time of his life." },
-        choiceB: { text: "Sell the raw movements for quick cash.", effects: { cash: 40000, sanity: -10 }, outcome: "You offload the rare movements to dealers for a massive cash injection. The Founder mourns the lost opportunity." }
+        choiceB: { text: "Sell the raw movements for quick cash.", effects: { cash: 40000, sanity: -8 }, outcome: "You offload the rare movements to dealers for a massive cash injection. The Founder mourns the lost opportunity." }
     },
     {
         title: "The Private Equity Pitch", character: "Venture Capitalist", sprite: "investor", text: "A smooth VC offers to inject capital to scale production, but wants 51% controlling interest.",
-        choiceA: { text: "Take the money! Scale the brand.", effects: { cash: 100000, sanity: -50 }, outcome: "The bank explodes with VC cash. Realizing he no longer owns his own name sends the Founder into deep depression." },
+        choiceA: { text: "Take the money! Scale the brand.", effects: { cash: 150000, sanity: -42 }, outcome: "The bank explodes with VC cash. Realizing he no longer owns his own name sends the Founder into deep depression." },
         choiceB: { text: "Refuse. We remain independent.", effects: { cash: 0, sanity: 25 }, outcome: "You stay poor, but free. The Founder tearfully embraces you, swearing lifelong loyalty." }
     },
     {
         title: "The 'Tropical' Dial Fiasco", character: "The Founder", sprite: "founder", text: "A batch of dials from three years ago has started rapidly fading from black to muddy brown due to a UV lacquer defect.",
         choiceA: { text: "Issue a global recall. Replace them free.", effects: { cash: -30000, sanity: 10 }, outcome: "Recalling and rebuilding drains the treasury. The Founder is proud you stood by the quality guarantee." },
-        choiceB: { text: "Market it as a 'rare tropical aging process'.", effects: { cash: 20000, sanity: -15 }, outcome: "Collectors eat up the 'Tropical' narrative, driving up prices. The Founder feels like a snake-oil salesman." }
+        choiceB: { text: "Market it as a 'rare tropical aging process'.", effects: { cash: 20000, sanity: -13 }, outcome: "Collectors eat up the 'Tropical' narrative, driving up prices. The Founder feels like a snake-oil salesman." }
     },
     {
         title: "The Caseback Debate", character: "Marketing Director", sprite: "designer", text: "The Founder designed a solid gold caseback. Marketing insists modern buyers demand a sapphire exhibition back to see the gears.",
         choiceA: { text: "The Founder's vision. Solid gold.", effects: { cash: -10000, sanity: 15 }, outcome: "Solid gold casebacks increase material costs. The Founder is delighted his vintage vision was respected." },
-        choiceB: { text: "Give the people what they want. Sapphire.", effects: { cash: 15000, sanity: -15 }, outcome: "Sapphire crystals are cheaper than gold discs, improving margins. The Founder complains it feels 'too modern'." }
+        choiceB: { text: "Give the people what they want. Sapphire.", effects: { cash: 15000, sanity: -13 }, outcome: "Sapphire crystals are cheaper than gold discs, improving margins. The Founder complains it feels 'too modern'." }
     },
     {
         title: "The 'Only Watch' Distraction", character: "The Founder", sprite: "founder", text: "For a charity auction, the Founder is obsessed with creating a quadruple-axis tourbillon, completely halting regular production.",
         choiceA: { text: "Let him work. The PR is worth it.", effects: { cash: -40000, sanity: 30 }, outcome: "Regular sales halt, bleeding cash dry. The Founder is producing his magnum opus and is radiantly happy." },
-        choiceB: { text: "Demand a simple dial variant instead.", effects: { cash: 20000, sanity: -25 }, outcome: "You force regular production, securing revenue. He violently throws his tourbillon blueprints in the trash." }
+        choiceB: { text: "Demand a simple dial variant instead.", effects: { cash: 20000, sanity: -21 }, outcome: "You force regular production, securing revenue. He violently throws his tourbillon blueprints in the trash." }
     },
     {
         title: "The Influencer's Scratch", character: "Influencer", sprite: "influencer", text: "An influencer borrowed your only award submission prototype for a photoshoot and returned it with a deep scratch across the platinum bezel.",
-        choiceA: { text: "Demand they pay for the repair publicly.", effects: { cash: 5000, sanity: -10 }, outcome: "The influencer pays up but the public feud on social media damages the brand's quiet, exclusive image." },
+        choiceA: { text: "Demand they pay for the repair publicly.", effects: { cash: 5000, sanity: -8 }, outcome: "The influencer pays up but the public feud on social media damages the brand's quiet, exclusive image." },
         choiceB: { text: "Eat the cost and laser-weld it secretly.", effects: { cash: -8000, sanity: 10 }, outcome: "Emergency laser-welding is costly, but the prototype is saved discreetly. The Founder is relieved it stayed private." }
     },
     {
         title: "The Spring Bar Failure", character: "Prominent Collector", sprite: "collector", text: "A collector posts a video of his sports watch falling off a yacht in Monaco because a cheap spring bar failed.",
-        choiceA: { text: "Blame the supplier. Send a free replacement.", effects: { cash: -12000, sanity: -10 }, outcome: "Writing off a replacement hurts. The Founder dislikes blaming others for a problem in 'his' watches." },
+        choiceA: { text: "Blame the supplier. Send a free replacement.", effects: { cash: -12000, sanity: -8 }, outcome: "Writing off a replacement hurts. The Founder dislikes blaming others for a problem in 'his' watches." },
         choiceB: { text: "Recall every watch and upgrade the bars.", effects: { cash: -35000, sanity: 15 }, outcome: "The massive retrofit cripples cash flow, but the Founder is proud you did the right thing for every customer." }
     },
     {
         title: "The Indie Alliance", character: "Fellow Indies", sprite: "watchmaker", text: "Three other indies propose sharing CNC resources to cut costs. Sounds great, but one of them is notoriously difficult.",
-        choiceA: { text: "Join the Alliance. We need the help.", effects: { cash: 25000, sanity: -20 }, outcome: "Pooling CNC resources cuts monthly overhead. But the difficult partner's ego drains the Founder." },
+        choiceA: { text: "Join the Alliance. We need the help.", effects: { cash: 25000, sanity: -17 }, outcome: "Pooling CNC resources cuts monthly overhead. But the difficult partner's ego drains the Founder." },
         choiceB: { text: "We walk alone. Absolute purity.", effects: { cash: -10000, sanity: 15 }, outcome: "You pay a premium for solo manufacturing. The Founder is relieved he won't compromise for anyone." }
     },
     {
         title: "The Skeletonization Snag", character: "The Founder", sprite: "founder", text: "The Founder spent weeks hand-skeletonizing a movement. He accidentally cuts too close, compromising structural integrity.",
         choiceA: { text: "Scrap it. The watch must be robust.", effects: { cash: -18000, sanity: 10 }, outcome: "Wasting weeks of labor burns a hole in the treasury. But the Founder respects the uncompromising quality standard." },
-        choiceB: { text: "Reinforce the bridge with a laser weld.", effects: { cash: 10000, sanity: -15 }, outcome: "You salvage and sell the piece. The Founder feels immense guilt knowing a hidden weld is inside the 'perfect' watch." }
+        choiceB: { text: "Reinforce the bridge with a laser weld.", effects: { cash: 10000, sanity: -13 }, outcome: "You salvage and sell the piece. The Founder feels immense guilt knowing a hidden weld is inside the 'perfect' watch." }
     },
     {
         title: "The Pantone Dispute", character: "Marketing Team", sprite: "designer", text: "Dial color time. The Founder wants subtle 'Geneva Blue'. Marketing insists on vibrant 'Tiffany-style' turquoise because it sells.",
-        choiceA: { text: "Go with Tiffany Blue. We need the hype.", effects: { cash: 40000, sanity: -30 }, outcome: "Turquoise dials fly off shelves, generating massive revenue. The Founder feels like a cheap trend-chaser." },
+        choiceA: { text: "Go with Tiffany Blue. We need the hype.", effects: { cash: 40000, sanity: -25 }, outcome: "Turquoise dials fly off shelves, generating massive revenue. The Founder feels like a cheap trend-chaser." },
         choiceB: { text: "Stick to the classic Geneva Blue.", effects: { cash: -5000, sanity: 20 }, outcome: "Classic blue sells slower. The Founder is proud to maintain the brand's dignified aesthetic." }
     },
     {
         title: "The F1 Temptation", character: "F1 Team Manager", sprite: "celebrity", text: "A struggling Formula 1 team offers to put your logo on their front wing for a 'discounted' price.",
-        choiceA: { text: "Sign the check. We need global eyes.", effects: { cash: -60000, sanity: 10 }, outcome: "The massive fee drains the treasury, but the global TV exposure puts your brand in front of millions." },
-        choiceB: { text: "We make dress watches, not race cars.", effects: { cash: 5000, sanity: -5 }, outcome: "You keep your money safe. But a rival indie signs the deal and gets all the press. The Founder feels overlooked." }
+        choiceA: { text: "Sign the check. We need global eyes.", effects: { cash: -60000, sanity: 10 }, outcome: "The massive fee drains the treasury, but the global TV exposure puts your brand in front of millions (When your car is being lapped)." },
+        choiceB: { text: "We make dress watches, not race cars.", effects: { cash: 1000, sanity: -4 }, outcome: "You keep your money safe. But a rival indie signs the deal and gets all the press. The Founder feels overlooked." }
     },
     {
         title: "The Dinosaur Bone Dial", character: "Exotic Supplier", sprite: "supplier", text: "A supplier offers fossilized T-Rex bone for dials. Marketing loves it; the Founder thinks it belongs in a museum.",
-        choiceA: { text: "Buy the bone. Marketing goldmine.", effects: { cash: 35000, sanity: -25 }, outcome: "The novelty causes a huge spike in sales. The Founder feels like he's running a Jurassic theme park." },
+        choiceA: { text: "Buy the bone. Marketing goldmine.", effects: { cash: 35000, sanity: -21 }, outcome: "The novelty causes a huge spike in sales. The Founder feels like he's running a Jurassic theme park." },
         choiceB: { text: "We use guilloché, not fossils. Pass.", effects: { cash: 0, sanity: 15 }, outcome: "You pass on the gimmick. The Founder goes back to his engine-turning lathe, nodding approvingly." }
     },
     {
         title: "The Smartwatch Panic", character: "Panicked Investors", sprite: "investor", text: "A tech company's smartwatch simulates a mechanical tourbillon. Investors are panicking and want you to make a 'hybrid'.",
-        choiceA: { text: "Appease them. Add a bluetooth module.", effects: { cash: 20000, sanity: -35 }, outcome: "The investors release bonus funding. The Founder is so disgusted he refuses to touch the 'infected' straps." },
+        choiceA: { text: "Appease them. Add a bluetooth module.", effects: { cash: 20000, sanity: -30 }, outcome: "The investors release bonus funding. The Founder is so disgusted he refuses to touch the 'infected' straps." },
         choiceB: { text: "Kick the investors out. Mechanical only.", effects: { cash: -15000, sanity: 25 }, outcome: "Investors pull funding. The Founder is invigorated by your fierce defense of mechanical purity." }
     },
     {
         title: "The Water Resistance Failure", character: "Quality Engineer", sprite: "engineer", text: "Your '100m water-resistant' sports watch just failed a pressure test at 30m. 50 units already shipped.",
         choiceA: { text: "Quiet recall and redesign the gasket.", effects: { cash: -35000, sanity: 15 }, outcome: "The recall costs a fortune, but every watch comes back perfect. The Founder's engineering pride is restored." },
-        choiceB: { text: "Update the website to '30m Splash Resistant'.", effects: { cash: 5000, sanity: -20 }, outcome: "You save recall money, but the Founder is appalled at the compromise in engineering integrity." }
+        choiceB: { text: "Update the website to '30m Splash Resistant'.", effects: { cash: 1000, sanity: -17 }, outcome: "You save recall money, but the Founder is appalled at the compromise in engineering integrity." }
     },
     {
         title: "The Stolen Prototype", character: "The Founder", sprite: "founder", text: "The Founder left the only award submission prototype in the back of a Geneva taxi after a few glasses of wine.",
         choiceA: { text: "Offer a massive cash reward for its return.", effects: { cash: -20000, sanity: 10 }, outcome: "The reward goes to a lucky taxi driver. The prototype is safely returned and the Founder weeps with relief." },
-        choiceB: { text: "Force him to rebuild it from memory.", effects: { cash: -5000, sanity: -15 }, outcome: "You save some money, but the rushed rebuild is exhausting. The Founder is miserable recreating his lost masterpiece." }
+        choiceB: { text: "Force him to rebuild it from memory.", effects: { cash: -5000, sanity: -13 }, outcome: "You save some money, but the rushed rebuild is exhausting. The Founder is miserable recreating his lost masterpiece." }
     },
     {
         title: "The YouTuber Teardown", character: "Watch YouTuber", sprite: "journalist", text: "A famous 'watchmaker reaction' YouTuber tears down your entry-level watch and heavily criticizes the lack of perlage.",
@@ -1307,37 +1445,37 @@ const ALL_SCENARIOS = [
     },
     {
         title: "The Vegan Leather Demand", character: "Gen-Z Collectors", sprite: "collector", text: "A vocal group of Gen-Z collectors demands you stop using alligator straps and switch to mushroom-based alternatives.",
-        choiceA: { text: "Mushroom strap as standard.", effects: { cash: 10000, sanity: -20 }, outcome: "Cheaper mushroom straps improve margins. The Founder hates the texture of the synthetic material." },
+        choiceA: { text: "Mushroom strap as standard.", effects: { cash: 10000, sanity: -17 }, outcome: "Cheaper mushroom straps improve margins. The Founder hates the texture of the synthetic material." },
         choiceB: { text: "Offer it only as a premium custom option.", effects: { cash: -2000, sanity: 10 }, outcome: "Custom batches cost a bit more. The Founder is glad his beloved alligator remains the standard." }
     },
     {
         title: "The In-House Hairspring", character: "The Founder", sprite: "founder", text: "The Founder has spent 4 months and half the budget trying to cast his own proprietary hairspring alloy. Wildly inaccurate so far.",
-        choiceA: { text: "Force him to buy Nivarox springs.", effects: { cash: 5000, sanity: -25 }, outcome: "Reliable springs speed production. The Founder is crushed to admit defeat on true vertical integration." },
+        choiceA: { text: "Force him to buy Nivarox springs.", effects: { cash: 5000, sanity: -21 }, outcome: "Reliable springs speed production. The Founder is crushed to admit defeat on true vertical integration." },
         choiceB: { text: "Let him keep experimenting. True independence.", effects: { cash: -25000, sanity: 15 }, outcome: "Failures continue burning R&D budget. The Founder is grateful for your unwavering belief." }
     },
     {
         title: "The Custom Font Obsession", character: "The Founder", sprite: "founder", text: "The Founder spent six weeks hand-drawing a bespoke font for the dial numerals. The launch is delayed.",
         choiceA: { text: "Let him perfect the font. His vision.", effects: { cash: -15000, sanity: 20 }, outcome: "You miss a crucial sales window. But the Founder considers the new dial an absolute masterpiece." },
-        choiceB: { text: "Scrap it. Use standard Breguet numerals.", effects: { cash: 8000, sanity: -20 }, outcome: "You launch on time, securing revenue. The Founder feels the watch is now fundamentally generic." }
+        choiceB: { text: "Scrap it. Use standard Breguet numerals.", effects: { cash: 8000, sanity: -17 }, outcome: "You launch on time, securing revenue. The Founder feels the watch is now fundamentally generic." }
     },
     {
         title: "The Dropped Tourbillon", character: "New Apprentice", sprite: "apprentice", text: "Your apprentice just dropped a fully assembled, hand-polished tourbillon cage onto the tile floor. It is completely crushed.",
-        choiceA: { text: "Fire him to set an example.", effects: { cash: 0, sanity: -15 }, outcome: "Being short-staffed slows everything. The Founder is stressed by the toxic, high-pressure atmosphere." },
+        choiceA: { text: "Fire him to set an example.", effects: { cash: -20000, sanity: -13 }, outcome: "Being short-staffed slows everything. The Founder is stressed by the toxic, high-pressure atmosphere." },
         choiceB: { text: "Forgive him. We all make mistakes. Rebuild.", effects: { cash: -20000, sanity: 10 }, outcome: "The ruined platinum and labor is immense. But the Founder respects your compassion and mentors the kid." }
     },
     {
         title: "The Heavy Hands", character: "The Founder", sprite: "founder", text: "The massive solid gold hands the Founder designed are too heavy—draining torque and killing the power reserve.",
         choiceA: { text: "Redesign the entire gear train.", effects: { cash: -30000, sanity: 15 }, outcome: "Re-engineering takes weeks of expensive R&D. The Founder is thrilled you didn't compromise his design." },
-        choiceB: { text: "Hollow out the hands to make them lighter.", effects: { cash: 5000, sanity: -15 }, outcome: "A quick CNC fix gets watches out the door. The Founder hates the new, flimsy feel." }
+        choiceB: { text: "Hollow out the hands to make them lighter.", effects: { cash: 5000, sanity: -13 }, outcome: "A quick CNC fix gets watches out the door. The Founder hates the new, flimsy feel." }
     },
     {
         title: "The Lab-Grown Diamonds", character: "Gem Supplier", sprite: "supplier", text: "You're making a gem-set piece. Lab-grown diamonds save 80% on costs, but traditionalists hate them.",
-        choiceA: { text: "Use lab-grown. Take the massive profit.", effects: { cash: 40000, sanity: -20 }, outcome: "Cost savings pad your treasury beautifully. The Founder feels like he's setting cheap glass into haute horlogerie." },
+        choiceA: { text: "Use lab-grown. Take the massive profit.", effects: { cash: 70000, sanity: -17 }, outcome: "Cost savings pad your treasury beautifully. The Founder feels like he's setting cheap glass into haute horlogerie." },
         choiceB: { text: "Mined, flawless diamonds only.", effects: { cash: -20000, sanity: 15 }, outcome: "VVS-clarity mined diamonds take a heavy toll. The Founder is proud to use only the earth's most precious materials." }
     },
     {
         title: "The Crypto Billionaire", character: "Crypto Billionaire", sprite: "tech", text: "A 22-year-old crypto billionaire wants 10 watches, but insists on paying in a highly volatile alt-coin.",
-        choiceA: { text: "Accept the crypto. Cash out immediately.", effects: { cash: 40000, sanity: -20 }, outcome: "You liquidate the meme-coins for a massive CHF influx. The Founder is disgusted by the entire transaction." },
+        choiceA: { text: "Accept the crypto. Cash out immediately.", effects: { cash: 69000, sanity: -17 }, outcome: "You liquidate the meme-coins for a massive CHF influx. The Founder is disgusted by the entire transaction." },
         choiceB: { text: "Swiss Francs only, kid.", effects: { cash: 0, sanity: 15 }, outcome: "You lose a massive payday. The Founder nods; real watches are bought with real money." }
     },
     {
@@ -1348,17 +1486,121 @@ const ALL_SCENARIOS = [
     {
         title: "The Size Trend Reversal", character: "The Founder", sprite: "founder", text: "The market shifted. Everyone wants 36mm vintage sizes, but your new movement was designed for a 42mm case.",
         choiceA: { text: "Scrap the movement and start over.", effects: { cash: -40000, sanity: 10 }, outcome: "Trashing tooling costs a fortune, but the new 36mm design is gorgeous. The Founder is excited by the fresh start." },
-        choiceB: { text: "Release the 42mm. Tell the market they're wrong.", effects: { cash: 10000, sanity: -10 }, outcome: "It sells to a niche crowd but wider collectors pass. The Founder worries about being out of touch." }
+        choiceB: { text: "Release the 42mm. Tell the market they're wrong.", effects: { cash: 10000, sanity: -8 }, outcome: "It sells to a niche crowd but wider collectors pass. The Founder worries about being out of touch." }
     },
     {
         title: "The 'Swiss Made' Loophole", character: "The Founder", sprite: "founder", text: "You realize you can legally stamp 'Swiss Made' even if you buy cases and hands from a cheap overseas factory.",
-        choiceA: { text: "Exploit the loophole. Everyone else does.", effects: { cash: 50000, sanity: -40 }, outcome: "Outsourcing slashes costs, making you rich. The Founder feels he has betrayed his Swiss heritage." },
+        choiceA: { text: "Exploit the loophole. Everyone else does.", effects: { cash: 50000, sanity: -34 }, outcome: "Outsourcing slashes costs, making you rich. The Founder feels he has betrayed his Swiss heritage." },
         choiceB: { text: "100% manufactured in our Swiss atelier.", effects: { cash: -25000, sanity: 25 }, outcome: "Swiss labor rates keep margins razor-thin. The Founder's pride in his work has never been higher." }
     },
     {
         title: "The Double-Signed Dial", character: "Major Retailer", sprite: "executive", text: "A massive retailer wants to co-brand your new release, stamping their name right beneath yours on the dial.",
-        choiceA: { text: "Allow the double-signature. Prestige is huge.", effects: { cash: 35000, sanity: -25 }, outcome: "Co-branded watches sell at a massive premium. The Founder is incredibly insulted." },
+        choiceA: { text: "Allow the double-signature. Prestige is huge.", effects: { cash: 35000, sanity: -21 }, outcome: "Co-branded watches sell at a massive premium. The Founder is incredibly insulted." },
         choiceB: { text: "Only our name goes on our dials.", effects: { cash: -5000, sanity: 20 }, outcome: "You lose the retailer's distribution network. The Founder is fiercely proud of your independence." }
+    },
+    // === NEW SCENARIOS (Scandal & Drama) ===
+    {
+        title: "The Founder's Bender", character: "Bar Owner", sprite: "collector", text: "The Founder gets hammered at a collector dinner and rants on camera about how 'collectors are idiots who buy with their ears, not their eyes.' The video goes viral overnight.",
+        choiceA: { text: "Damage control — issue a public apology.", effects: { cash: -15000, sanity: 5 }, outcome: "The apology tour is expensive and humiliating, but the watch community respects the honesty." },
+        choiceB: { text: "Let it ride. He's an artist, not a diplomat.", effects: { cash: 10000, sanity: -17 }, outcome: "The controversy generates a wave of media coverage and curiosity buyers. The Founder is mortified when he sobers up." }
+    },
+    {
+        title: "The Charity Fraud", character: "Charity Organizer", sprite: "executive", text: "A prestigious charity auction invites you to donate a unique piece. Rumors swirl that the organizer is pocketing half the raised funds.",
+        choiceA: { text: "Withdraw your piece. Protect your reputation.", effects: { cash: -5000, sanity: 10 }, outcome: "You dodge the scandal. When the fraud is exposed, other brands who stayed in look terrible." },
+        choiceB: { text: "Stay in. The exposure is worth the risk.", effects: { cash: 20000, sanity: -13 }, outcome: "Your watch sells for a record price. But months later, when fraud charges drop, your name is in every headline." }
+    },
+    {
+        title: "The $500M Bonfire", character: "Industry Rival", sprite: "executive", text: "A major luxury conglomerate just destroyed $500M worth of their own unsold watches to protect brand value. Collectors are outraged. The press asks your Founder for comment.",
+        choiceA: { text: "\"We'd never destroy our art.\" Bold PR move.", effects: { cash: 10000, sanity: 10 }, outcome: "The quote goes viral. Collectors love the integrity. A few corporate execs quietly add you to their enemies list." },
+        choiceB: { text: "\"No comment.\" Stay out of the drama.", effects: { cash: 0, sanity: 0 }, outcome: "You play it safe. No enemies made, no headlines earned. The Founder shrugs." }
+    },
+    {
+        title: "The Superfake Epidemic", character: "Customs Officer", sprite: "journalist", text: "Customs seizes a shipment of near-perfect copies of YOUR watch from Shenzhen. They're so good that even your dealer couldn't tell the difference at first glance.",
+        choiceA: { text: "Sue the counterfeiters. Lawyers aren't cheap.", effects: { cash: -30000, sanity: 10 }, outcome: "The lawsuit drags on for months but sends a strong message. Counterfeits of your brand drop significantly." },
+        choiceB: { text: "Redesign your caseback with anti-counterfeiting.", effects: { cash: -15000, sanity: 5 }, outcome: "The new security features cost money but collectors love the added exclusivity. The fakers will catch up eventually." }
+    },
+    {
+        title: "The Pay-to-Play Award", character: "GPHG Committee", sprite: "executive", text: "The GPHG wants your watch entered, but participation fees, mandatory gala tables, and 'nomination costs' total CHF 25,000. You might win 'Best Independent.'",
+        choiceA: { text: "Pay up. A GPHG win could change everything.", effects: { cash: -25000, sanity: 5 }, outcome: "You don't win, but you do get nominated. The exposure brings a few important retailer meetings." },
+        choiceB: { text: "Refuse. Real recognition can't be bought.", effects: { cash: 0, sanity: 15 }, outcome: "The Founder is passionately proud. 'Our watches win in the hearts of real collectors, not in pay-to-play ceremonies.'" }
+    },
+    {
+        title: "The Flipper Syndicate", character: "Mystery Buyer", sprite: "collector", text: "You discover that a ring of flippers has been using fake identities to buy your entire annual allocation, reselling them for 3x retail. None of your real collectors can get one.",
+        choiceA: { text: "Blacklist them all. Nuke the waitlist.", effects: { cash: -20000, sanity: 15 }, outcome: "You purge the list, losing months of guaranteed sales. But real collectors finally get their watches and loyalty skyrockets." },
+        choiceB: { text: "Raise retail prices to match resale.", effects: { cash: 30000, sanity: -21 }, outcome: "The price hike brings in huge revenue, but collectors accuse you of becoming 'just another greedy brand.' The Founder is deeply uncomfortable." }
+    },
+    // === NEW SCENARIOS (Business & Ethics) ===
+    {
+        title: "The Founder's Arrest", character: "Lawyer", sprite: "executive", text: "The Founder is detained at customs in Dubai carrying 3 undeclared watches worth 200K CHF. He insists 'they're personal pieces, not merchandise.'",
+        choiceA: { text: "Hire an international lawyer and bail him out.", effects: { cash: -35000, sanity: 5 }, outcome: "The lawyer gets him released in 48 hours. The story stays out of the press, but the legal bills are astronomical." },
+        choiceB: { text: "Let him sort it out himself. It's his mess.", effects: { cash: 0, sanity: -13 }, outcome: "The Founder spends a week in detention. When he finally returns, he barely speaks to you for a month." }
+    },
+    {
+        title: "Blood Gold", character: "NGO Investigator", sprite: "journalist", text: "An NGO exposes that your gold supplier sources from conflict-zone mines. The report names your brand specifically.",
+        choiceA: { text: "Switch to certified Fairmined gold immediately.", effects: { cash: -20000, sanity: 20 }, outcome: "The switch costs a fortune but generates incredible press. 'The first indie brand to go fully ethical!' The Founder is moved." },
+        choiceB: { text: "Stick with current supplier. Our gold is legal.", effects: { cash: 5000, sanity: -21 }, outcome: "Technically legal, yes. But the Instagram backlash is brutal. Several high-profile collectors publicly sell their pieces." }
+    },
+    {
+        title: "The Frankenwatch", character: "Service Tech", sprite: "founder", text: "Your service center accidentally shipped a watch back to a VIP client with a non-original part — from a completely different brand. The collector is a watch journalist.",
+        choiceA: { text: "Full recall of all recently serviced watches.", effects: { cash: -20000, sanity: 10 }, outcome: "The recall is expensive but the transparency earns massive respect. The journalist writes a positive piece about your integrity." },
+        choiceB: { text: "Quietly replace just that one watch. Hope nobody notices.", effects: { cash: -3000, sanity: -8 }, outcome: "You fix the watch, but the journalist already photographed the wrong part. The forum thread is devastating." }
+    },
+    {
+        title: "The Kickback", character: "Chinese Distributor", sprite: "executive", text: "Your Chinese distributor hints that a 'facilitation payment' of 30K CHF would 'guarantee' placement in the best boutique in Shanghai.",
+        choiceA: { text: "Pay the facilitation fee. Business is business.", effects: { cash: 25000, sanity: -17 }, outcome: "The boutique placement drives strong Asian sales, net positive. But the Founder feels dirty about how you got there." },
+        choiceB: { text: "We don't do business that way.", effects: { cash: -10000, sanity: 15 }, outcome: "You lose the Shanghai opportunity. The Founder respects your ethics. 'Some things are worth more than money.'" }
+    },
+    {
+        title: "The Stolen Prototype", character: "Security Guard", sprite: "founder", text: "A prototype of your unreleased Grand Complication — 2 years of R&D — appears on a Chinese forum. Someone in the factory leaked it.",
+        choiceA: { text: "Lock down the factory. Delay launch, redesign.", effects: { cash: -25000, sanity: 5 }, outcome: "The redesign takes months and costs a fortune, but the final product is even better. The leaker is fired." },
+        choiceB: { text: "Launch immediately before copies arrive.", effects: { cash: 15000, sanity: -13 }, outcome: "You rush to market. The watch sells well, but within 6 months, convincing clones appear everywhere." }
+    },
+    // === NEW SCENARIOS (Industry Drama) ===
+    {
+        title: "The Forum War", character: "Anonymous User", sprite: "journalist", text: "A prominent watch forum erupts in a 50-page thread claiming your finishing is 'overrated' and your 'in-house' movement uses a bought ébauche. The Founder is furious.",
+        choiceA: { text: "Post a transparent factory tour video.", effects: { cash: -5000, sanity: 15 }, outcome: "The video goes viral. Enthusiasts are blown away by the craftsmanship. The forum thread dies." },
+        choiceB: { text: "Threaten legal action against the forum.", effects: { cash: -10000, sanity: -8 }, outcome: "The legal threats backfire spectacularly. Now you're the 'brand that can't take criticism.' The Founder regrets everything." }
+    },
+    {
+        title: "The Instagram Exodus", character: "Social Media Collector", sprite: "collector", text: "A famous Instagram collector who owns 3 of your watches posts he's 'selling the whole collection — indie watches are dead.' His 500K followers panic.",
+        choiceA: { text: "Personally call him and buy them back.", effects: { cash: -40000, sanity: 5 }, outcome: "You buy back the watches and quietly resell them to real enthusiasts. The drama fades, but your wallet bleeds." },
+        choiceB: { text: "Ignore it. One collector doesn't define us.", effects: { cash: -5000, sanity: -4 }, outcome: "The market dips slightly from the panic. Most loyal collectors stick around, but a few waver." }
+    },
+    {
+        title: "The Scooter Gang", character: "Police Detective", sprite: "journalist", text: "Armed robbers on scooters raid a retailer carrying your watches. 4 pieces — worth 120K CHF — are gone. Insurance will only cover half.",
+        choiceA: { text: "Cover the retailer's full loss yourself.", effects: { cash: -60000, sanity: 15 }, outcome: "The retailer is stunned by your generosity. Word spreads: every retailer in the network now wants to carry your brand." },
+        choiceB: { text: "Let insurance handle it. Not your problem.", effects: { cash: -10000, sanity: -8 }, outcome: "The retailer is bitter about eating the loss. They quietly drop your brand from their showcase window." }
+    },
+    {
+        title: "The Photoshopped Patriarch", character: "PR Consultant", sprite: "executive", text: "A foreign dignitary is caught photoshopping YOUR watch off their wrist in official photos after a corruption scandal. The internet loves it.",
+        choiceA: { text: "Lean into the meme. 'Nothing to Hide' campaign.", effects: { cash: 20000, sanity: -8 }, outcome: "The campaign is hilarious and goes viral. Sales spike among younger buyers. The Founder finds it undignified." },
+        choiceB: { text: "Distance yourself. Issue a formal statement.", effects: { cash: -5000, sanity: 10 }, outcome: "The statement is boring but professional. No further association with the scandal." }
+    },
+    {
+        title: "The Movement Squeeze", character: "Component Supplier", sprite: "executive", text: "Your main ébauche supplier doubles their minimum order quantity. You now need to order 500 base movements or find a new supplier.",
+        choiceA: { text: "Order 500 and warehouse the extras.", effects: { cash: -40000, sanity: 5 }, outcome: "Your warehouse fills with movements you'll need years to use. Cash is tight, but you're secured for the long term." },
+        choiceB: { text: "Begin developing your own in-house caliber.", effects: { cash: -30000, sanity: 20 }, outcome: "It'll take 18 months and drain resources, but the Founder is ecstatic. 'Finally, a movement that is truly OURS.'" }
+    },
+    // === NEW SCENARIOS (Art vs. Commerce) ===
+    {
+        title: "The Radium Dial", character: "Vintage Collector", sprite: "collector", text: "A wealthy client wants you to restore his grandfather's radium-dial watch from the 1920s. The Founder finds it historically fascinating but the material is radioactive.",
+        choiceA: { text: "Accept. Use proper safety protocols.", effects: { cash: 15000, sanity: 10 }, outcome: "The restoration is magnificent. The vintage community buzzes about your skill. The Founder handles the radium dial with reverence." },
+        choiceB: { text: "Refuse. Too much liability.", effects: { cash: 0, sanity: -4 }, outcome: "You pass on the project. The collector is disappointed, and the Founder quietly wishes he could have touched that piece of history." }
+    },
+    {
+        title: "The NFT Collab", character: "Tech Entrepreneur", sprite: "billionaire", text: "A crypto bro offers 200K CHF for a 'phygital' collab: a watch paired with a blockchain-authenticated NFT digital twin. The Founder looks physically ill.",
+        choiceA: { text: "Take the money. The Founder will survive.", effects: { cash: 50000, sanity: -30 }, outcome: "The NFT collab is a commercial smash. The Founder refuses to attend the launch event and calls it 'the death of horology.'" },
+        choiceB: { text: "We are watchmakers, not tech companies.", effects: { cash: 0, sanity: 15 }, outcome: "You decline the offer. Six months later, the NFT market crashes and you look like a genius. The Founder says 'told you so.'" }
+    },
+    {
+        title: "The Waitlist Leak", character: "Former Employee", sprite: "journalist", text: "An ex-employee leaked your full VIP waitlist to a competitor. 200 of your most loyal collectors are now being cold-called with 'similar' offerings.",
+        choiceA: { text: "Fire the mole and warn your VIPs personally.", effects: { cash: -10000, sanity: 10 }, outcome: "You call every single VIP. Most are touched by the personal attention. A few defect anyway, but loyalty deepens." },
+        choiceB: { text: "Accelerate production to fulfill orders fast.", effects: { cash: -20000, sanity: -4 }, outcome: "Rushing production keeps clients from straying, but quality dips slightly. The Founder notices." }
+    },
+    {
+        title: "The Drunk Watchmaker", character: "Head Watchmaker", sprite: "founder", text: "Your head watchmaker shows up to work still drunk from last night. He proceeds to drop a tourbillon cage worth 15K CHF into the ultrasonic cleaner — wrong basket. The cage is destroyed.",
+        choiceA: { text: "Fire him on the spot. Zero tolerance.", effects: { cash: -15000, sanity: -8 }, outcome: "He's gone. The cage is gone. And the Founder is upset — he trained that watchmaker for 6 years." },
+        choiceB: { text: "Send him home. Give him a warning.", effects: { cash: -15000, sanity: 5 }, outcome: "The cage is still destroyed, but you keep an irreplaceable craftsman. He never drinks before work again." }
     }
 ];
 
@@ -1378,14 +1620,27 @@ const CHANCE_EVENTS = [
     // Negative
     { icon: '📈', title: 'FRANC SURGES', text: 'The Swiss Franc rockets against major currencies. Your export margins are crushed overnight.', effects: { cash: -20000, sanity: 0 }, positive: false },
     { icon: '🚢', title: 'SUPPLY CHAIN DELAY', text: 'German spring wire is stuck in customs for weeks. Production grinds to a halt while you wait.', effects: { cash: -15000, sanity: 0 }, positive: false },
-    { icon: '🌊', title: 'WORKSHOP FLOOD', text: 'A burst pipe floods the workshop overnight. Several precision instruments and raw materials are damaged.', effects: { cash: -25000, sanity: -5 }, positive: false },
-    { icon: '🥷', title: 'COPYCAT SCANDAL', text: 'A near-perfect clone of your flagship model appears on Amazon for $200. Collectors are confused and furious.', effects: { cash: -10000, sanity: -5 }, positive: false },
-    { icon: '🚪', title: 'KEY EMPLOYEE QUITS', text: 'Your senior polisher, who trained for 8 years, accepts an offer from a big Geneva maison. A devastating loss.', effects: { cash: -10000, sanity: -10 }, positive: false },
+    { icon: '🌊', title: 'WORKSHOP FLOOD', text: 'A burst pipe floods the workshop overnight. Several precision instruments and raw materials are damaged.', effects: { cash: -25000, sanity: -4 }, positive: false },
+    { icon: '🥷', title: 'COPYCAT SCANDAL', text: 'A near-perfect clone of your flagship model appears on Amazon for $200. Collectors are confused and furious.', effects: { cash: -10000, sanity: -4 }, positive: false },
+    { icon: '🚪', title: 'KEY EMPLOYEE QUITS', text: 'Your senior polisher, who trained for 8 years, accepts an offer from a big Geneva maison. A devastating loss.', effects: { cash: -10000, sanity: -8 }, positive: false },
     { icon: '⚡', title: 'ENERGY BILL SPIKE', text: 'Electricity costs double overnight due to new energy regulations. The monthly operating costs are staggering.', effects: { cash: -10000, sanity: 0 }, positive: false },
     { icon: '📋', title: 'INSURANCE HIKE', text: 'After a spate of industry claims, your insurance premium increases sharply. Another drain on the bottom line.', effects: { cash: -8000, sanity: 0 }, positive: false },
-    { icon: '❌', title: 'COSC REJECTION', text: 'The COSC rejects an entire batch of movements for failing chronometry tests. Back to regulation.', effects: { cash: -15000, sanity: -5 }, positive: false },
+    { icon: '❌', title: 'COSC REJECTION', text: 'The COSC rejects an entire batch of movements for failing chronometry tests. Back to regulation.', effects: { cash: -15000, sanity: -4 }, positive: false },
     { icon: '🏠', title: 'RENT INCREASE', text: 'Your landlord raises the atelier rent by 40%, citing "market conditions." Moving would cost even more.', effects: { cash: -12000, sanity: 0 }, positive: false },
-    { icon: '🚫', title: 'SHOW CANCELLED', text: 'The Geneva watch show is cancelled last-minute. All your prep costs — booth, travel, marketing — wasted.', effects: { cash: -5000, sanity: -5 }, positive: false },
+    { icon: '🚫', title: 'SHOW CANCELLED', text: 'The Geneva watch show is cancelled last-minute. All your prep costs — booth, travel, marketing — wasted.', effects: { cash: -5000, sanity: -4 }, positive: false },
+    // === NEW FATE CARDS ===
+    // Positive
+    { icon: '🎬', title: 'DOCUMENTARY DEAL', text: 'Netflix picks up a documentary about your atelier. The royalty check arrives early and the exposure is priceless.', effects: { cash: 25000, sanity: 5 }, positive: true },
+    { icon: '🏆', title: 'COMPETITOR SCANDAL', text: "A rival brand's founder is arrested for tax fraud. Half their waitlist quietly switches to you overnight.", effects: { cash: 20000, sanity: 5 }, positive: true },
+    { icon: '💍', title: 'ROYAL COMMISSION', text: 'A European royal family quietly commissions a bespoke pocket watch as a state gift. The prestige is immeasurable.', effects: { cash: 30000, sanity: 10 }, positive: true },
+    { icon: '🔧', title: 'VINTAGE DISCOVERY', text: 'A collector finds one of your earliest prototypes at a flea market for 50 CHF. The story goes viral and drives collector interest.', effects: { cash: 10000, sanity: 10 }, positive: true },
+    { icon: '🏛️', title: 'MUSEUM ACQUISITION', text: 'A major horological museum acquires one of your pieces for their permanent collection. Incredible prestige for the brand.', effects: { cash: 5000, sanity: 15 }, positive: true },
+    // Negative
+    { icon: '🍷', title: 'FOUNDER GOES VIRAL', text: "The Founder is filmed at a gala ranting about how 'quartz watches killed the soul of horology.' The video gets 5M views. Not all press is good press.", effects: { cash: -5000, sanity: -8 }, positive: false },
+    { icon: '💀', title: 'GRAY MARKET CRASH', text: 'The pre-owned watch market crashes 40%. Your secondary market value plummets, scaring off speculators AND real collectors.', effects: { cash: -20000, sanity: -4 }, positive: false },
+    { icon: '🔒', title: 'CUSTOMS SEIZURE', text: 'A shipment of 3 finished watches is seized by customs over a paperwork error. Legal fees pile up while they sit in a warehouse.', effects: { cash: -15000, sanity: -4 }, positive: false },
+    { icon: '🐀', title: 'RAT IN THE WORKSHOP', text: 'A literal rat gets into the workshop and chews through wiring and damages stored dials. Pest control plus replacements cost a fortune.', effects: { cash: -10000, sanity: -4 }, positive: false },
+    { icon: '📉', title: 'CRYPTO COLLECTOR BANKRUPTCY', text: 'Your biggest client — a crypto whale who ordered 5 bespoke pieces — files for bankruptcy. The deposits are frozen.', effects: { cash: -25000, sanity: -4 }, positive: false },
 ];
 
 /* ================================================
@@ -1875,6 +2130,65 @@ function formatCashEffect(v) {
   return (k > 0 ? '+' : '') + k + 'K';
 }
 
+// === SCOREBOARD ===
+// URL placeholder — set this to your deployed Google Apps Script Web App URL
+const SCOREBOARD_URL = 'https://script.google.com/macros/s/AKfycbxbRbYbQR9UANYamlmPxKq2VrfyupkHQB-qJ7oIRKQSlg2_zvc-AWqKYqu5ftn-9eYo/exec';
+
+// HMAC key (obfuscated, split across variables)
+const _k1 = 'V2F0Y2hP', _k2 = 'c2NhcnNT', _k3 = 'aW11bGF0', _k4 = 'b3IyMDI2';
+function _getKey() { return atob(_k1 + _k2 + _k3 + _k4); }
+
+// Simple HMAC-like signing (SHA-256 not available in all contexts, use string hash)
+function generateHMAC(score, cash, sanity, ts) {
+  const key = _getKey();
+  const msg = `${score}|${cash}|${sanity}|${ts}|${key}`;
+  // Simple hash — djb2
+  let hash = 5381;
+  for (let i = 0; i < msg.length; i++) {
+    hash = ((hash << 5) + hash + msg.charCodeAt(i)) >>> 0;
+  }
+  return hash.toString(16);
+}
+
+// Score formula
+function calcScore(cash, sanity) {
+  if (cash <= 0 || sanity <= 0) return 0;
+  return Math.floor(cash * sanity / 100 / 1000) * 1000;
+}
+
+// Plausibility validation
+function validateScore(score, cash, sanity) {
+  if (cash <= 0 || sanity < 0 || sanity > 100) return false;
+  if (score > 200000) return false;
+  const expected = calcScore(cash, sanity);
+  return score === expected;
+}
+
+// XSS-safe text escape (works in browser and Node.js)
+function escapeHTML(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Render leaderboard table
+function renderScoreboard(entries) {
+  const container = document.getElementById('scoreboard');
+  if (!container) return;
+  if (!entries || entries.length === 0) {
+    container.innerHTML = '<div class="scoreboard-empty">No scores yet. Be the first!</div>';
+    return;
+  }
+  let html = '<table><thead><tr><th class="rank-col">#</th><th>NAME</th><th class="score-col">SCORE</th></tr></thead><tbody>';
+  const max = Math.min(entries.length, 100);
+  for (let i = 0; i < max; i++) {
+    const e = entries[i];
+    const cls = e.isPlayer ? ' class="highlight"' : '';
+    const name = e.isPlayer ? '▸ ' + escapeHTML(e.name) + ' ◂' : escapeHTML(e.name);
+    html += `<tr${cls}><td class="rank-col">${i + 1}</td><td>${name}</td><td class="score-col">${(e.score || 0).toLocaleString()}</td></tr>`;
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
 // === GAME ===
 class Game {
   constructor() {
@@ -1896,6 +2210,7 @@ class Game {
     const target = this.screens[name];
     if (!target) { console.warn('[SCREEN] Unknown screen:', name); return; }
     console.log('[SCREEN]', cur?.id?.replace('-screen', '') || 'none', '→', name);
+    this._currentScreen = name;
     if (cur) {
       // If same screen, just swap content in place (no transition needed)
       if (cur === target) {
@@ -1918,7 +2233,7 @@ class Game {
   startGame() { this.showScreen('tutorial'); }
 
   startScenarios() {
-    this.cash = 65000; this.sanity = 82; this.idx = 0;
+    this.cash = 100000; this.sanity = 75; this.idx = 0;
     const shuffled = [...ALL_SCENARIOS];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1971,9 +2286,7 @@ class Game {
 
   applyEffects(fx) {
     if (fx.cash) this.cash += fx.cash;
-    // Happiness floor: no single choice can drop happiness by more than 15
-    const delta = fx.sanity ? Math.max(fx.sanity, -15) : 0;
-    this.sanity += delta;
+    if (fx.sanity) this.sanity += fx.sanity;
     this.sanity = Math.max(0, Math.min(100, this.sanity));
     this.updateUI(true);
   }
@@ -2144,19 +2457,194 @@ class Game {
     document.getElementById('ending-title').textContent = title;
     document.getElementById('ending-text').textContent = text;
     document.getElementById('ending-reason').textContent = reason;
+    // Calculate final score: cash weighted by sanity%, rounded to 1K
+    const finalScore = Math.floor(this.cash * this.sanity / 100 / 1000) * 1000;
     document.getElementById('final-stats').innerHTML =
       '<div class="final-stat"><span class="stat-icon">💰</span><span class="stat-final-value">' + formatCash(this.cash) + '</span><span class="stat-label">CASH</span></div>' +
+      '<div class="final-stat final-stat-score"><span class="stat-label">FINAL SCORE</span><span class="stat-final-value score-value">' + finalScore.toLocaleString() + '</span></div>' +
       '<div class="final-stat"><span class="stat-icon">😊</span><span class="stat-final-value">' + this.sanity + '</span><span class="stat-label">HAPPINESS</span></div>';
-    devLog('GAME_OVER', { result: title, cash: this.cash, happiness: this.sanity, reason });
+    devLog('GAME_OVER', { result: title, cash: this.cash, happiness: this.sanity, score: finalScore, reason });
     if (window.DEV_MODE) console.log('%c[DEV] Full game log:', 'color: #d4a843; font-weight: bold', JSON.stringify(window.DEV_LOG, null, 2));
-    this.lastShareData = { icon, title, cash: formatCash(this.cash), happiness: this.sanity, isWin: this.sanity >= 75, summary: text };
+    this.lastShareData = { icon, title, cash: formatCash(this.cash), happiness: this.sanity, score: finalScore, isWin: this.sanity >= 75, summary: text };
     this.showScreen('ending');
     prepareShareImage();
+    // Pre-fetch leaderboard data while user is on ending screen
+    this._prefetchLeaderboard();
+  }
+
+  _prefetchLeaderboard() {
+    if (typeof SCOREBOARD_URL !== 'undefined' && SCOREBOARD_URL) {
+      fetch(SCOREBOARD_URL + '?top=100')
+        .then(r => r.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            this._leaderboardCache = data.slice(0, 100);
+          }
+        })
+        .catch(() => { });
+    }
   }
 
   restart() {
     document.querySelector('.ending-card')?.classList.remove('victory-glow');
+    // Reset submit UI
+    const submitArea = document.getElementById('score-submit');
+    const btn = document.getElementById('submit-score-btn');
+    const nameInput = document.getElementById('score-name');
+    if (submitArea) submitArea.style.display = '';
+    if (btn) { btn.disabled = false; btn.textContent = '📤 SUBMIT SCORE'; }
+    if (nameInput) nameInput.value = '';
+    this._scoreSubmitted = false;
     this.showScreen('start');
+  }
+
+  showLeaderboard() {
+    this._leaderboardFrom = this._currentScreen || 'start';
+    this.loadScoreboard();
+    this.showScreen('leaderboard');
+  }
+
+  leaderboardBack() {
+    const back = this._leaderboardFrom || 'start';
+    this.showScreen(back);
+  }
+
+  submitScore() {
+    const nameInput = document.getElementById('score-name');
+    const btn = document.getElementById('submit-score-btn');
+    if (!nameInput || !btn) return;
+
+    const name = nameInput.value.trim().substring(0, 20);
+    if (!name) { nameInput.style.borderColor = '#ff4444'; return; }
+    nameInput.style.borderColor = '';
+
+    // Prevent double submit
+    if (this._scoreSubmitted) return;
+    this._scoreSubmitted = true;
+    btn.disabled = true;
+    btn.textContent = '⏳ SUBMITTING...';
+
+    const score = calcScore(this.cash, this.sanity);
+    const ts = Date.now();
+    const hmac = generateHMAC(score, this.cash, this.sanity, ts);
+
+    const payload = {
+      name, score,
+      cash: this.cash,
+      sanity: this.sanity,
+      ending: document.getElementById('ending-title')?.textContent || '',
+      ts, hmac
+    };
+
+    // Optimistic entry for immediate use
+    const entry = { name, score, isPlayer: true };
+
+    if (typeof SCOREBOARD_URL !== 'undefined' && SCOREBOARD_URL) {
+      // POST score, then fetch fresh leaderboard, then navigate
+      fetch(SCOREBOARD_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(() => {
+        // Fetch fresh leaderboard after POST
+        return fetch(SCOREBOARD_URL + '?top=100').then(r => r.json());
+      }).then(data => {
+        btn.textContent = '✅ SUBMITTED';
+        if (Array.isArray(data) && data.length > 0) {
+          // Mark player's entry in DB data
+          const existsInDB = data.some(d => d.name === name && d.score === score);
+          if (existsInDB) {
+            let marked = false;
+            this._leaderboardCache = data.map(d => {
+              if (d.name === name && d.score === score && !marked) {
+                marked = true;
+                return { ...d, isPlayer: true };
+              }
+              return d;
+            }).slice(0, 100);
+          } else {
+            // Not yet in DB, add optimistic entry
+            const merged = [...data, entry];
+            merged.sort((a, b) => b.score - a.score);
+            this._leaderboardCache = merged.slice(0, 100);
+          }
+        } else {
+          this._leaderboardCache = [entry];
+        }
+        this._navigateToLeaderboard();
+      }).catch(() => {
+        // Network error — fall back to optimistic UI
+        btn.textContent = '✅ SUBMITTED';
+        if (!this._leaderboardCache) this._leaderboardCache = [];
+        this._leaderboardCache.push(entry);
+        this._leaderboardCache.sort((a, b) => b.score - a.score);
+        this._leaderboardCache = this._leaderboardCache.slice(0, 100);
+        this._navigateToLeaderboard();
+      });
+    } else {
+      // No SCOREBOARD_URL — pure optimistic
+      btn.textContent = '✅ SUBMITTED';
+      if (!this._leaderboardCache) this._leaderboardCache = [];
+      this._leaderboardCache.push(entry);
+      this._leaderboardCache.sort((a, b) => b.score - a.score);
+      this._leaderboardCache = this._leaderboardCache.slice(0, 100);
+      this._navigateToLeaderboard();
+    }
+  }
+
+  _navigateToLeaderboard() {
+    renderScoreboard(this._leaderboardCache);
+    this._leaderboardFrom = 'ending';
+    this.showScreen('leaderboard');
+    setTimeout(() => {
+      const hl = document.querySelector('.scoreboard tr.highlight');
+      if (hl) hl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }
+
+  loadScoreboard() {
+    const container = document.getElementById('scoreboard');
+    if (!container) return;
+
+    // Show cached data immediately if available
+    if (this._leaderboardCache && this._leaderboardCache.length > 0) {
+      renderScoreboard(this._leaderboardCache);
+    } else {
+      container.innerHTML = '<div class="scoreboard-empty">Loading scores...</div>';
+    }
+
+    // Fetch fresh data from DB
+    if (typeof SCOREBOARD_URL !== 'undefined' && SCOREBOARD_URL) {
+      fetch(SCOREBOARD_URL + '?top=100')
+        .then(r => r.json())
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            const playerEntry = this._leaderboardCache?.find(e => e.isPlayer);
+            if (playerEntry) {
+              const existsInDB = data.some(d => d.name === playerEntry.name && d.score === playerEntry.score);
+              if (existsInDB) {
+                let marked = false;
+                this._leaderboardCache = data.map(d => {
+                  if (d.name === playerEntry.name && d.score === playerEntry.score && !marked) {
+                    marked = true;
+                    return { ...d, isPlayer: true };
+                  }
+                  return d;
+                }).slice(0, 100);
+              } else {
+                const merged = [...data.filter(d => !d.isPlayer), playerEntry];
+                merged.sort((a, b) => b.score - a.score);
+                this._leaderboardCache = merged.slice(0, 100);
+              }
+            } else {
+              this._leaderboardCache = data.slice(0, 100);
+            }
+            renderScoreboard(this._leaderboardCache);
+          }
+        })
+        .catch(() => { });
+    }
   }
 
   testEnding(type) {
@@ -2181,7 +2669,8 @@ class Game {
 let _cachedShareFile = null;
 
 function getShareText(data) {
-  return `${data.icon} ${data.title}\n💰 ${data.cash} | 😊 ${data.happiness}/100\n${data.summary}\nhttps://maor-zelinger-watches.github.io/WATCH_OSCARS_SIMULATOR/`;
+  const scoreText = data.score ? `\n🏅 Score: ${data.score.toLocaleString()}` : '';
+  return `${data.icon} ${data.title}\n💰 ${data.cash} | 😊 ${data.happiness}/100${scoreText}\n${data.summary}\nhttps://maor-zelinger-watches.github.io/WATCH_OSCARS_SIMULATOR/`;
 }
 
 // Pre-render screenshot after ending screen is visible
@@ -2192,7 +2681,7 @@ function prepareShareImage() {
       const activeScreen = document.querySelector('.screen.active');
       const card = activeScreen?.querySelector('.game-card');
       if (!card) return;
-      const canvas = await html2canvas(card, { backgroundColor: '#1a1a3e', scale: 2 });
+      const canvas = await html2canvas(card, { backgroundColor: '#1a1a3e', scale: 2, willReadFrequently: true });
       const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
       _cachedShareFile = new File([blob], 'watch-oscars-result.png', { type: 'image/png' });
     } catch (e) { /* silent — share will fall back to text */ }
