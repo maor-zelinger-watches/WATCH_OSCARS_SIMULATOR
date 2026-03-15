@@ -2213,46 +2213,43 @@ const FIRST_NAMES = [
   'Sophie', 'Raj', 'Luca', 'Olga', 'Felix', 'Marta', 'Enzo', 'Hiro',
   'Sven', 'Nina', 'Omar', 'Alon'
 ];
+
 const FUNNY_TERMS = [
-"Desk Diver",
-"Zaratsu",
-"Stealth Wealth",
-"Got the Call",
-"AD Games",
-"Relationship with the AD",
-"Grail Watch",
-"Hype",
-"Future Classic",
-"Grey Market",
-"Generic Dive Watch",
-"Rich Man's Invicta",
-"GADA",
-"Beater",
-"Daily Driver",
-"Frankenwatch",
-"Bustdown",
-"Chandelier",
-"Fauxtina",
-"Tropical Dial",
-"Patina",
-"Full Set",
-"Wrist Check",
-"Wristshot",
-"Wrist Roll",
-"Heavy Hitter",
-"Slider",
-"Mint",
-"Fashion Watch"
+  "Desk Diver",
+  "Zaratsu",
+  "Stealth Wealth",
+  "Got the Call",
+  "AD Games",
+  "Relationship with the AD",
+  "Grail Watch",
+  "Hype",
+  "Future Classic",
+  "Grey Market",
+  "Generic Dive Watch",
+  "Rich Man's Invicta",
+  "GADA",
+  "Beater",
+  "Daily Driver",
+  "Frankenwatch",
+  "Bustdown",
+  "Chandelier",
+  "Fauxtina",
+  "Tropical Dial",
+  "Patina",
+  "Full Set",
+  "Wrist Check",
+  "Wristshot",
+  "Wrist Roll",
+  "Heavy Hitter",
+  "Slider",
+  "Mint",
+  "Fashion Watch"
 ];
 
 function getRandomName() {
   const first = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
   const term = FUNNY_TERMS[Math.floor(Math.random() * FUNNY_TERMS.length)];
   return term + ' ' + first;
-}
-
-function generateGameId() {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
 }
 
 // === GAME ===
@@ -2536,12 +2533,10 @@ class Game {
     prepareShareImage();
     // Pre-fetch leaderboard data while user is on ending screen
     this._prefetchLeaderboard();
-    // Pre-fill random name and auto-submit
-    this._gameId = generateGameId();
+    // Pre-fill random name
     const randomName = getRandomName();
     const nameInput = document.getElementById('score-name');
     if (nameInput) nameInput.value = randomName;
-    this._autoSubmitScore(randomName, finalScore);
   }
 
   _prefetchLeaderboard() {
@@ -2557,27 +2552,6 @@ class Game {
     }
   }
 
-  _autoSubmitScore(name, score) {
-    if (typeof SCOREBOARD_URL === 'undefined' || !SCOREBOARD_URL) return;
-    const ts = Date.now();
-    const hmac = generateHMAC(score, this.cash, this.sanity, ts);
-    const payload = {
-      name, score,
-      cash: this.cash,
-      sanity: this.sanity,
-      ending: document.getElementById('ending-title')?.textContent || '',
-      ts, hmac,
-      gameId: this._gameId
-    };
-    // Fire-and-forget — no UI navigation
-    fetch(SCOREBOARD_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(() => { });
-  }
-
   restart() {
     document.querySelector('.ending-card')?.classList.remove('victory-glow');
     // Reset submit UI
@@ -2588,7 +2562,6 @@ class Game {
     if (btn) { btn.disabled = false; btn.textContent = '📤 SUBMIT SCORE'; }
     if (nameInput) nameInput.value = '';
     this._scoreSubmitted = false;
-    this._gameId = null;
     this.showScreen('start');
   }
 
@@ -2627,8 +2600,7 @@ class Game {
       cash: this.cash,
       sanity: this.sanity,
       ending: document.getElementById('ending-title')?.textContent || '',
-      ts, hmac,
-      gameId: this._gameId
+      ts, hmac
     };
 
     // Optimistic entry for immediate use
