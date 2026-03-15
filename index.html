@@ -552,9 +552,9 @@ em {
 #final-stats {
     display: flex;
     justify-content: center;
-    gap: 14px;
+    gap: 8px;
     margin-bottom: 16px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .final-stat {
@@ -562,10 +562,12 @@ em {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    padding: 8px 14px;
+    padding: 8px 10px;
     background: var(--navy-dark);
     border: 2px solid var(--gold-dark);
     justify-content: center;
+    flex: 1;
+    min-width: 0;
 }
 
 .final-stat .stat-icon {
@@ -573,7 +575,7 @@ em {
 }
 
 .final-stat .stat-final-value {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: var(--gold-light);
 }
 
@@ -588,7 +590,7 @@ em {
 }
 
 .final-stat-score .score-value {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     color: var(--gold-light);
     text-shadow: 0 0 10px rgba(212, 168, 67, 0.4);
 }
@@ -601,6 +603,19 @@ em {
     margin: 10px 0 8px;
 }
 
+.score-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.score-label-text {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    color: var(--gold);
+    white-space: nowrap;
+}
+
 .score-name-input {
     flex: 1;
     background: var(--navy-dark);
@@ -608,6 +623,7 @@ em {
     color: var(--gold-light);
     padding: 8px 10px;
     font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
     outline: none;
 }
 
@@ -1120,8 +1136,10 @@ em {
                 <p id="ending-reason" class="ending-reason"></p>
                 <div id="final-stats"></div>
                 <div id="score-submit" class="score-submit">
-                    <input type="text" id="score-name" class="score-name-input" placeholder="Your Name" maxlength="20"
-                        autocomplete="off" />
+                    <div class="score-name-row">
+                        <span class="score-label-text">NAME:</span>
+                        <input type="text" id="score-name" class="score-name-input" maxlength="20" autocomplete="off" />
+                    </div>
                     <button class="btn btn-primary score-submit-btn" id="submit-score-btn"
                         onclick="game.submitScore()">📤 SUBMIT SCORE</button>
                 </div>
@@ -2132,7 +2150,7 @@ function formatCashEffect(v) {
 
 // === SCOREBOARD ===
 // URL placeholder — set this to your deployed Google Apps Script Web App URL
-const SCOREBOARD_URL = 'https://script.google.com/macros/s/AKfycbxbRbYbQR9UANYamlmPxKq2VrfyupkHQB-qJ7oIRKQSlg2_zvc-AWqKYqu5ftn-9eYo/exec';
+const SCOREBOARD_URL = 'https://script.google.com/macros/s/AKfycbwt4L-ip3jb_QHhDiMjwc4obPq8bK5OyRYNtJvqW5SHqsFcTiTcS75S07RW8CVNswgk/exec';
 
 // HMAC key (obfuscated, split across variables)
 const _k1 = 'V2F0Y2hP', _k2 = 'c2NhcnNT', _k3 = 'aW11bGF0', _k4 = 'b3IyMDI2';
@@ -2159,6 +2177,7 @@ function calcScore(cash, sanity) {
 // Plausibility validation
 function validateScore(score, cash, sanity) {
   if (cash <= 0 || sanity < 0 || sanity > 100) return false;
+  if (score > 200000) return false;
   const expected = calcScore(cash, sanity);
   return score === expected;
 }
@@ -2186,6 +2205,54 @@ function renderScoreboard(entries) {
   }
   html += '</tbody></table>';
   container.innerHTML = html;
+}
+
+// === RANDOM NAME GENERATOR ===
+const FIRST_NAMES = [
+  'Tony', 'Dave', 'Karen', 'Hans', 'Pierre', 'Marco', 'Yuki', 'Klaus',
+  'Sophie', 'Raj', 'Luca', 'Olga', 'Felix', 'Marta', 'Enzo', 'Hiro',
+  'Sven', 'Nina', 'Omar', 'Alon'
+];
+const FUNNY_TERMS = [
+"Desk Diver",
+"Zaratsu",
+"Stealth Wealth",
+"Got the Call",
+"AD Games",
+"Relationship with the AD",
+"Grail Watch",
+"Hype",
+"Future Classic",
+"Grey Market",
+"Generic Dive Watch",
+"Rich Man's Invicta",
+"GADA",
+"Beater",
+"Daily Driver",
+"Frankenwatch",
+"Bustdown",
+"Chandelier",
+"Fauxtina",
+"Tropical Dial",
+"Patina",
+"Full Set",
+"Wrist Check",
+"Wristshot",
+"Wrist Roll",
+"Heavy Hitter",
+"Slider",
+"Mint",
+"Fashion Watch"
+];
+
+function getRandomName() {
+  const first = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+  const term = FUNNY_TERMS[Math.floor(Math.random() * FUNNY_TERMS.length)];
+  return term + ' ' + first;
+}
+
+function generateGameId() {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
 }
 
 // === GAME ===
@@ -2469,6 +2536,12 @@ class Game {
     prepareShareImage();
     // Pre-fetch leaderboard data while user is on ending screen
     this._prefetchLeaderboard();
+    // Pre-fill random name and auto-submit
+    this._gameId = generateGameId();
+    const randomName = getRandomName();
+    const nameInput = document.getElementById('score-name');
+    if (nameInput) nameInput.value = randomName;
+    this._autoSubmitScore(randomName, finalScore);
   }
 
   _prefetchLeaderboard() {
@@ -2484,6 +2557,27 @@ class Game {
     }
   }
 
+  _autoSubmitScore(name, score) {
+    if (typeof SCOREBOARD_URL === 'undefined' || !SCOREBOARD_URL) return;
+    const ts = Date.now();
+    const hmac = generateHMAC(score, this.cash, this.sanity, ts);
+    const payload = {
+      name, score,
+      cash: this.cash,
+      sanity: this.sanity,
+      ending: document.getElementById('ending-title')?.textContent || '',
+      ts, hmac,
+      gameId: this._gameId
+    };
+    // Fire-and-forget — no UI navigation
+    fetch(SCOREBOARD_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => { });
+  }
+
   restart() {
     document.querySelector('.ending-card')?.classList.remove('victory-glow');
     // Reset submit UI
@@ -2494,6 +2588,7 @@ class Game {
     if (btn) { btn.disabled = false; btn.textContent = '📤 SUBMIT SCORE'; }
     if (nameInput) nameInput.value = '';
     this._scoreSubmitted = false;
+    this._gameId = null;
     this.showScreen('start');
   }
 
@@ -2532,7 +2627,8 @@ class Game {
       cash: this.cash,
       sanity: this.sanity,
       ending: document.getElementById('ending-title')?.textContent || '',
-      ts, hmac
+      ts, hmac,
+      gameId: this._gameId
     };
 
     // Optimistic entry for immediate use
