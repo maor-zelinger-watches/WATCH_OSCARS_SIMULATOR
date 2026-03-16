@@ -1214,6 +1214,136 @@ em {
 
     </div>
     <script>
+/* ================================================
+   WATCH OSCARS SIMULATOR — Utilities
+   ================================================ */
+
+// === SCOREBOARD ===
+// URL placeholder — set this to your deployed Google Apps Script Web App URL
+const SCOREBOARD_URL = 'https://script.google.com/macros/s/AKfycbxk0Z-tK5dFZZgOCIkePUBa4tYSli2-qqM-JKTQo2oxmhks4vWfL_KGyn-NK_uLxMSR/exec';
+
+// HMAC key (obfuscated, split across variables)
+const _k1 = 'V2F0Y2hP', _k2 = 'c2NhcnNT', _k3 = 'aW11bGF0', _k4 = 'b3IyMDI2';
+function _getKey() { return atob(_k1 + _k2 + _k3 + _k4); }
+
+// Simple HMAC-like signing (SHA-256 not available in all contexts, use string hash)
+function generateHMAC(score, cash, sanity, ts) {
+    const key = _getKey();
+    const msg = `${score}|${cash}|${sanity}|${ts}|${key}`;
+    // Simple hash — djb2
+    let hash = 5381;
+    for (let i = 0; i < msg.length; i++) {
+        hash = ((hash << 5) + hash + msg.charCodeAt(i)) >>> 0;
+    }
+    return hash.toString(16);
+}
+
+// Session token for anti-cheat: proves the player actually played
+function _generateSessionToken(nonce) {
+    const ts = Date.now();
+    const key = _getKey();
+    const msg = `${nonce}|${ts}|${key}`;
+    let hash = 5381;
+    for (let i = 0; i < msg.length; i++) {
+        hash = ((hash << 5) + hash + msg.charCodeAt(i)) >>> 0;
+    }
+    return { token: hash.toString(16), ts };
+}
+
+function _getBrowserFingerprint() {
+    const raw = [
+        navigator.userAgent || '',
+        navigator.language || '',
+        screen.width + 'x' + screen.height,
+        screen.colorDepth || '',
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || '',
+        navigator.maxTouchPoints || 0,
+    ].join('|');
+    // djb2 hash
+    let hash = 5381;
+    for (let i = 0; i < raw.length; i++) {
+        hash = ((hash << 5) + hash + raw.charCodeAt(i)) >>> 0;
+    }
+    return hash.toString(16);
+}
+
+// Score formula
+function calcScore(cash, sanity) {
+    if (cash <= 0 || sanity <= 0) return 0;
+    return Math.floor(cash * sanity / 100 / 1000) * 1000;
+}
+
+// XSS-safe text escape (works in browser and Node.js)
+function escapeHTML(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Render leaderboard table
+function renderScoreboard(entries) {
+    const container = document.getElementById('scoreboard');
+    if (!container) return;
+    if (!entries || entries.length === 0) {
+        container.innerHTML = '<div class="scoreboard-empty">No scores yet. Be the first!</div>';
+        return;
+    }
+    let html = '<table><thead><tr><th class="rank-col">#</th><th>NAME</th><th class="score-col">SCORE</th></tr></thead><tbody>';
+    const max = Math.min(entries.length, 100);
+    for (let i = 0; i < max; i++) {
+        const e = entries[i];
+        const cls = e.isPlayer ? ' class="highlight"' : '';
+        const name = e.isPlayer ? '▸ ' + escapeHTML(e.name) + ' ◂' : escapeHTML(e.name);
+        html += `<tr${cls}><td class="rank-col">${i + 1}</td><td>${name}</td><td class="score-col">${(e.score || 0).toLocaleString()}</td></tr>`;
+    }
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+// === RANDOM NAME GENERATOR ===
+const FIRST_NAMES = [
+    'Tony', 'Dave', 'Karen', 'Hans', 'Pierre', 'Marco', 'Yuki', 'Klaus',
+    'Sophie', 'Raj', 'Luca', 'Olga', 'Felix', 'Marta', 'Enzo', 'Hiro',
+    'Sven', 'Nina', 'Omar', 'Alon'
+];
+
+const FUNNY_TERMS = [
+    "Desk Diver",
+    "Zaratsu",
+    "Stealth Wealth",
+    "Got the Call",
+    "AD Games",
+    "Relationship with the AD",
+    "Grail Watch",
+    "Hype",
+    "Future Classic",
+    "Grey Market",
+    "Generic Dive Watch",
+    "Rich Man's Invicta",
+    "GADA",
+    "Beater",
+    "Daily Driver",
+    "Frankenwatch",
+    "Bustdown",
+    "Chandelier",
+    "Fauxtina",
+    "Tropical Dial",
+    "Patina",
+    "Full Set",
+    "Wrist Check",
+    "Wristshot",
+    "Wrist Roll",
+    "Heavy Hitter",
+    "Slider",
+    "Mint",
+    "Fashion Watch"
+];
+
+function getRandomName() {
+    const first = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+    const term = FUNNY_TERMS[Math.floor(Math.random() * FUNNY_TERMS.length)];
+    return term + ' ' + first;
+}
+
 /* WATCH OSCARS SIMULATOR — Scenario Data (60 scenarios) */
 const ALL_SCENARIOS = [
     {
@@ -2148,109 +2278,6 @@ function formatCashEffect(v) {
   return (k > 0 ? '+' : '') + k + 'K';
 }
 
-// === SCOREBOARD ===
-// URL placeholder — set this to your deployed Google Apps Script Web App URL
-const SCOREBOARD_URL = 'https://script.google.com/macros/s/AKfycbwt4L-ip3jb_QHhDiMjwc4obPq8bK5OyRYNtJvqW5SHqsFcTiTcS75S07RW8CVNswgk/exec';
-
-// HMAC key (obfuscated, split across variables)
-const _k1 = 'V2F0Y2hP', _k2 = 'c2NhcnNT', _k3 = 'aW11bGF0', _k4 = 'b3IyMDI2';
-function _getKey() { return atob(_k1 + _k2 + _k3 + _k4); }
-
-// Simple HMAC-like signing (SHA-256 not available in all contexts, use string hash)
-function generateHMAC(score, cash, sanity, ts) {
-  const key = _getKey();
-  const msg = `${score}|${cash}|${sanity}|${ts}|${key}`;
-  // Simple hash — djb2
-  let hash = 5381;
-  for (let i = 0; i < msg.length; i++) {
-    hash = ((hash << 5) + hash + msg.charCodeAt(i)) >>> 0;
-  }
-  return hash.toString(16);
-}
-
-// Score formula
-function calcScore(cash, sanity) {
-  if (cash <= 0 || sanity <= 0) return 0;
-  return Math.floor(cash * sanity / 100 / 1000) * 1000;
-}
-
-// Plausibility validation
-function validateScore(score, cash, sanity) {
-  if (cash <= 0 || sanity < 0 || sanity > 100) return false;
-  if (score > 200000) return false;
-  const expected = calcScore(cash, sanity);
-  return score === expected;
-}
-
-// XSS-safe text escape (works in browser and Node.js)
-function escapeHTML(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-// Render leaderboard table
-function renderScoreboard(entries) {
-  const container = document.getElementById('scoreboard');
-  if (!container) return;
-  if (!entries || entries.length === 0) {
-    container.innerHTML = '<div class="scoreboard-empty">No scores yet. Be the first!</div>';
-    return;
-  }
-  let html = '<table><thead><tr><th class="rank-col">#</th><th>NAME</th><th class="score-col">SCORE</th></tr></thead><tbody>';
-  const max = Math.min(entries.length, 100);
-  for (let i = 0; i < max; i++) {
-    const e = entries[i];
-    const cls = e.isPlayer ? ' class="highlight"' : '';
-    const name = e.isPlayer ? '▸ ' + escapeHTML(e.name) + ' ◂' : escapeHTML(e.name);
-    html += `<tr${cls}><td class="rank-col">${i + 1}</td><td>${name}</td><td class="score-col">${(e.score || 0).toLocaleString()}</td></tr>`;
-  }
-  html += '</tbody></table>';
-  container.innerHTML = html;
-}
-
-// === RANDOM NAME GENERATOR ===
-const FIRST_NAMES = [
-  'Tony', 'Dave', 'Karen', 'Hans', 'Pierre', 'Marco', 'Yuki', 'Klaus',
-  'Sophie', 'Raj', 'Luca', 'Olga', 'Felix', 'Marta', 'Enzo', 'Hiro',
-  'Sven', 'Nina', 'Omar', 'Alon'
-];
-
-const FUNNY_TERMS = [
-  "Desk Diver",
-  "Zaratsu",
-  "Stealth Wealth",
-  "Got the Call",
-  "AD Games",
-  "Relationship with the AD",
-  "Grail Watch",
-  "Hype",
-  "Future Classic",
-  "Grey Market",
-  "Generic Dive Watch",
-  "Rich Man's Invicta",
-  "GADA",
-  "Beater",
-  "Daily Driver",
-  "Frankenwatch",
-  "Bustdown",
-  "Chandelier",
-  "Fauxtina",
-  "Tropical Dial",
-  "Patina",
-  "Full Set",
-  "Wrist Check",
-  "Wristshot",
-  "Wrist Roll",
-  "Heavy Hitter",
-  "Slider",
-  "Mint",
-  "Fashion Watch"
-];
-
-function getRandomName() {
-  const first = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
-  const term = FUNNY_TERMS[Math.floor(Math.random() * FUNNY_TERMS.length)];
-  return term + ' ' + first;
-}
 
 // === GAME ===
 class Game {
@@ -2297,6 +2324,10 @@ class Game {
 
   startScenarios() {
     this.cash = 100000; this.sanity = 75; this.idx = 0;
+    // Anti-cheat: generate session start token
+    const nonce = Math.random().toString(36).substring(2);
+    this._sessionStart = _generateSessionToken(nonce);
+    this._sessionCheckpoint = null;
     const shuffled = [...ALL_SCENARIOS];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -2404,6 +2435,11 @@ class Game {
     if (this.cash <= 0) { console.log('[NEXT] → BANKRUPT'); this.showBankrupt(); return; }
     if (this.sanity <= 0) { console.log('[NEXT] → QUIT'); this.showQuit(); return; }
     this.idx++;
+    // Anti-cheat: generate checkpoint token at 12th scenario (idx 11)
+    if (this.idx === 11 && !this._sessionCheckpoint) {
+      const cpNonce = Math.random().toString(36).substring(2);
+      this._sessionCheckpoint = _generateSessionToken(cpNonce);
+    }
     // ~30% chance of a Fate Card event (not on the very first or last scenario)
     if (this.idx > 1 && this.idx < 16 && Math.random() < 0.3) {
       console.log('[FATE CARD] Triggering at idx', this.idx);
@@ -2541,7 +2577,7 @@ class Game {
 
   _prefetchLeaderboard() {
     if (typeof SCOREBOARD_URL !== 'undefined' && SCOREBOARD_URL) {
-      fetch(SCOREBOARD_URL + '?top=100')
+      fetch(SCOREBOARD_URL + '?top=100' + (window.DEV_MODE ? '&mode=test' : ''))
         .then(r => r.json())
         .then(data => {
           if (Array.isArray(data)) {
@@ -2600,8 +2636,17 @@ class Game {
       cash: this.cash,
       sanity: this.sanity,
       ending: document.getElementById('ending-title')?.textContent || '',
-      ts, hmac
+      ts, hmac,
+      // Anti-cheat session tokens
+      startToken: this._sessionStart?.token || null,
+      startTs: this._sessionStart?.ts || null,
+      checkpointToken: this._sessionCheckpoint?.token || null,
+      checkpointTs: this._sessionCheckpoint?.ts || null,
+      // Browser fingerprint for rate limiting
+      fp: _getBrowserFingerprint(),
     };
+    // Tag test submissions from DEV_MODE
+    if (window.DEV_MODE) payload.test = true;
 
     // Optimistic entry for immediate use
     const entry = { name, score, isPlayer: true };
@@ -2683,7 +2728,7 @@ class Game {
 
     // Fetch fresh data from DB
     if (typeof SCOREBOARD_URL !== 'undefined' && SCOREBOARD_URL) {
-      fetch(SCOREBOARD_URL + '?top=100')
+      fetch(SCOREBOARD_URL + '?top=100' + (window.DEV_MODE ? '&mode=test' : ''))
         .then(r => r.json())
         .then(data => {
           if (Array.isArray(data) && data.length > 0) {
